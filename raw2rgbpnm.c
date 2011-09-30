@@ -299,6 +299,24 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 }
 /* }}} */
 
+static int parse_format(const char *p, unsigned int *w, unsigned int *h)
+{
+	char *end;
+
+	for (; isspace(*p); ++p);
+
+	*w = strtoul(p, &end, 10);
+	if (*end != 'x')
+		return -1;
+
+	p = end + 1;
+	*h = strtoul(p, &end, 10);
+	if (*end != '\0')
+		return -1;
+
+	return 0;
+}
+
 /* {{{ [fold] int main(int argc, char *argv[]) */
 int main(int argc, char *argv[])
 {
@@ -358,9 +376,10 @@ int main(int argc, char *argv[])
 			algorithm_name = optarg;
 			break;
 		case 's':
-			size[0] = atoi(optarg);
-			size[1] = atoi(strchr(optarg,',')+1);
-			printf("Configured image size %i,%i\n", size[0], size[1]);
+			if (parse_format(optarg, &size[0], &size[1]) < 0) {
+				error("bad size");
+				exit(0);
+			}
 			break;
 		case 'c':
 			crop[0] = atoi(optarg);
@@ -372,8 +391,8 @@ int main(int argc, char *argv[])
 			break;
 		case 'h':
 			printf("%s - Convert headerless raw image to RGB file (PNM)\n"
-			       "Usage: %s [-h] [-w] [-s X,Y] <inputfile> <outputfile>\n"
-			       "-s <X,Y>      Specify image size\n"
+			       "Usage: %s [-h] [-w] [-s XxY] <inputfile> <outputfile>\n"
+			       "-s <XxY>      Specify image size\n"
 			       "-c <X,Y>      Crop from left and top this many pixels\n"
 			       "-r <format>   Specify input file format format (-r ? for list, default UYVY)\n"
 			       "-b <bright>   Set brightness (multiplier) to output image (float, default 1.0)\n"
