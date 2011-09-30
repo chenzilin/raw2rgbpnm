@@ -291,14 +291,14 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 	}
 }
 
-static int parse_format(const char *p, unsigned int *w, unsigned int *h, char sep)
+static int parse_format(const char *p, unsigned int *w, unsigned int *h)
 {
 	char *end;
 
 	for (; isspace(*p); ++p);
 
 	*w = strtoul(p, &end, 10);
-	if (*end != sep)
+	if (*end != 'x')
 		return -1;
 
 	p = end + 1;
@@ -313,10 +313,7 @@ int main(int argc, char *argv[])
 {
 	FILE *f;
 	int size[2] = {-1,-1};
-	int size2[2];			/* Size after cropping */
-	int crop[2] = {0,0};
 	unsigned char *src, *dst;
-	unsigned char *src2;		/* Origin of cropped image */
 	char *file_in = NULL, *file_out = NULL;
 	char multi_file_out[NAME_MAX];
 	int format = V4L2_PIX_FMT_UYVY;
@@ -367,17 +364,10 @@ int main(int argc, char *argv[])
 			algorithm_name = optarg;
 			break;
 		case 's':
-			if (parse_format(optarg, &size[0], &size[1], 'x') < 0) {
+			if (parse_format(optarg, &size[0], &size[1]) < 0) {
 				error("bad size");
 				exit(0);
 			}
-			break;
-		case 'c':
-			if (parse_format(optarg, &crop[0], &crop[1], ',') < 0) {
-				error("bad crop");
-				exit(0);
-			}
-			printf("Configured cropping of %i,%i\n", crop[0], crop[1]);
 			break;
 		case 'n':
 			multiple = 1;
@@ -386,7 +376,6 @@ int main(int argc, char *argv[])
 			printf("%s - Convert headerless raw image to RGB file (PNM)\n"
 			       "Usage: %s [-h] [-w] [-s XxY] <inputfile> <outputfile>\n"
 			       "-s <XxY>      Specify image size\n"
-			       "-c <X,Y>      Crop from left and top this many pixels\n"
 			       "-r <format>   Specify input file format format (-r ? for list, default UYVY)\n"
 			       "-b <bright>   Set brightness (multiplier) to output image (float, default 1.0)\n"
 			       "-a <algo>     Select algorithm, use \"-a ?\" for a list\n"
@@ -409,18 +398,15 @@ int main(int argc, char *argv[])
 	src = read_raw_data(file_in, multiple ? 0 : -1, size, get_pix_bpp(format));
 	printf("Image size: %ix%i, bytes per pixel: %i, format: %s\n", size[0], size[1],
 		get_pix_bpp(format), get_pix_fmt(format));
-	size2[0] = size[0] - crop[0];
-	size2[1] = size[1] - crop[1];
-	dst = xalloc(size2[0]*size2[1]*3);
+	dst = xalloc(size[0]*size[1]*3);
 	do {
-		src2 = src + (crop[0] + crop[1]*size[0])*get_pix_bpp(format)/8;
-		raw_to_rgb(src2, size[0]*get_pix_bpp(format)/8, size2, format, dst, size2[0]*3);
+		raw_to_rgb(src, size[0]*get_pix_bpp(format)/8, size, format, dst, size[0]*3);
 		sprintf(multi_file_out, "%s-%03i.pnm", file_out, n);
 		printf("Writing to file `%s'...\n", multiple ? multi_file_out : file_out);
 		f = fopen(multiple ? multi_file_out : file_out, "wb");
 		if (!f) error("file open failed");
-		fprintf(f, "P6\n%i %i\n255\n", size2[0], size2[1]);
-		r = fwrite(dst, size2[0]*size2[1]*3, 1, f);
+		fprintf(f, "P6\n%i %i\n255\n", size[0], size[1]);
+		r = fwrite(dst, size[0]*size[1]*3, 1, f);
 		if (r!=1) error("write failed");
 		fclose(f);
 		if (!multiple) break;
