@@ -52,7 +52,6 @@ static int swaprb = 0;
 static int highbits = 0;			/* Bayer RAW10 formats use high bits for data */
 static int brightness = 256;			/* 24.8 fixed point */
 
-/* {{{ [fold] v4l2_pix_fmt_str */
 static const struct {
 	__u32 fmt;
 	int bpp;		/* 0=variable, -1=unknown */
@@ -99,17 +98,14 @@ static const struct {
 	{ V4L2_PIX_FMT_SGRBG10DPCM8,    8, "SGRBG10DPCM8 (10bit raw bayer DPCM compressed to 8 bits)" },
 	{ V4L2_PIX_FMT_SBGGR16,  16,  "SBGGR16 (16 BGBG.. GRGR..)" },
 };
-/* }}} */
 
-/* {{{ [fold] static void *xalloc(int size) */
 static void *xalloc(int size)
 {
 	void *b = calloc(1, size);
 	if (!b) error("memory allocation failed");
 	return b;
 }
-/* }}} */
-/* {{{ [fold] static const char *get_pix_fmt(__u32 f) */
+
 static const char *get_pix_fmt(__u32 f)
 {
 	int i;
@@ -118,8 +114,7 @@ static const char *get_pix_fmt(__u32 f)
 	};
 	return "(unknown)";
 }
-/* }}} */
-/* {{{ [fold] static int get_pix_bpp(__u32 f) */
+
 static int get_pix_bpp(__u32 f)
 {
 	int i;
@@ -128,8 +123,7 @@ static int get_pix_bpp(__u32 f)
 	};
 	return -1;
 }
-/* }}} */
-/* {{{ [fold] static unsigned char *read_raw_data(char *filename, int framenum, int size[2], int bpp) */
+
 static const int resolutions[][2] = {
 	{ 176, 144 },		/* QCIF */
 	{ 320, 240 },		/* QVGA */
@@ -193,8 +187,7 @@ static unsigned char *read_raw_data(char *filename, int framenum, int size[2], i
 out:	fclose(f);
 	return b;
 }
-/* }}} */
-/* {{{ [fold] static void raw_to_rgb(unsigned char *src, int src_stride, int size[2], int format, unsigned char *rgb, int rgb_stride) */
+
 static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int format, unsigned char *rgb, int rgb_stride)
 {
 	unsigned char *buf;
@@ -297,7 +290,6 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 		break;
 	}
 }
-/* }}} */
 
 static int parse_format(const char *p, unsigned int *w, unsigned int *h)
 {
@@ -317,7 +309,6 @@ static int parse_format(const char *p, unsigned int *w, unsigned int *h)
 	return 0;
 }
 
-/* {{{ [fold] int main(int argc, char *argv[]) */
 int main(int argc, char *argv[])
 {
 	FILE *f;
@@ -437,6 +428,3 @@ int main(int argc, char *argv[])
 	free(dst);
 	return 0;
 }
-/* }}} */
-
-/* EOF */

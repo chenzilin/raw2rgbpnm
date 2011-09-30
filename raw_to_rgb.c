@@ -43,7 +43,6 @@ static int qc_sharpness = 32768;
 /* Bayer-to-RGB conversion Copyright (C) Tuukka Toivonen 2003 */
 /* Licensed under GPL */
 
-/* {{{ [fold] qc_imag_writergb(void *addr, int bpp, unsigned char r, unsigned char g, unsigned char b) */
 /* Write RGB pixel value to the given address.
  * addr = memory address, to which the pixel is written
  * bpp = number of bytes in the pixel (should be 3 or 4)
@@ -107,19 +106,16 @@ static inline void qc_imag_writergb(void *addr, int bpp,
 		}
 	}
 }
-/* }}} */
-/* {{{ [fold] qc_imag_writergb10(void *addr, int bpp, unsigned char r, unsigned char g, unsigned char b) */
+
 /* Assume r, g, and b are 10-bit quantities */
 static inline void qc_imag_writergb10(void *addr, int bpp,
 	unsigned short r, unsigned short g, unsigned short b)
 {
 	qc_imag_writergb(addr, bpp, r>>2, g>>2, b>>2);
 }
-/* }}} */
 
 /* Following routines work with 8 bit RAW bayer data */
 
-/* {{{ [fold] qc_imag_bay2rgb_horip(unsigned char *bay, int bay_line, unsigned char *rgb, int rgb_line, columns, rows, bpp) */
 /* Convert bayer image to RGB image using fast horizontal-only interpolation.
  * bay = points to the bayer image data (upper left pixel is green)
  * bay_line = bytes between the beginnings of two consecutive rows
@@ -170,9 +166,8 @@ static inline void qc_imag_bay2rgb_horip(unsigned char *bay, int bay_line,
 		bay += bay_line2;
 		rgb += rgb_line2;
 	} while (--row_cnt);
-}		  
-/* }}} */
-/* {{{ [fold] qc_imag_bay2rgb_ip(unsigned char *bay, int bay_line, char *rgb, int rgb_line, columns, rows, bpp) */
+}
+
 /* Convert bayer image to RGB image using full (slow) linear interpolation.
  * bay = points to the bayer image data (upper left pixel is green)
  * bay_line = bytes between the beginnings of two consecutive rows
@@ -269,8 +264,7 @@ static inline void qc_imag_bay2rgb_ip(unsigned char *bay, int bay_line,
 	} while (--column_cnt);
 	qc_imag_writergb(cur_rgb, bpp, cur_bay[-bay_line], cur_bay[0], cur_bay[-1]);
 }
-/* }}} */
-/* {{{ [fold] qc_imag_bay2rgb_cott(unsigned char *bay, int bay_line, unsigned char *rgb, int rgb_line, int columns, int rows, int bpp) */
+
 /* Convert bayer image to RGB image using 0.5 displaced light linear interpolation.
  * bay = points to the bayer image data (upper left pixel is green)
  * bay_line = bytes between the beginnings of two consecutive rows
@@ -331,8 +325,7 @@ static inline void qc_imag_bay2rgb_cott(unsigned char *bay, int bay_line,
 	qc_imag_writergb(cur_rgb+rgb_line,     bpp, cur_bay[1], cur_bay[bay_line+1], cur_bay[bay_line]);
 	qc_imag_writergb(cur_rgb+rgb_line+bpp, bpp, cur_bay[1], cur_bay[bay_line+1], cur_bay[bay_line]);
 }
-/* }}} */
-/* {{{ [fold] qc_imag_bay2rgb_cottnoip(unsigned char *bay, int bay_line, unsigned char *rgb, int rgb_line, int columns, int rows, int bpp) */
+
 /* Convert bayer image to RGB image using 0.5 displaced nearest neighbor.
  * bay = points to the bayer image data (upper left pixel is green)
  * bay_line = bytes between the beginnings of two consecutive rows
@@ -392,8 +385,7 @@ static inline void qc_imag_bay2rgb_cottnoip(unsigned char *bay, int bay_line,
 	qc_imag_writergb(cur_rgb+rgb_line,     bpp, cur_bay[1], cur_bay[bay_line+1], cur_bay[bay_line]);
 	qc_imag_writergb(cur_rgb+rgb_line+bpp, bpp, cur_bay[1], cur_bay[bay_line+1], cur_bay[bay_line]);
 }
-/* }}} */
-/* {{{ [fold] qc_imag_bay2rgb_gptm_fast(unsigned char *bay, int bay_line, unsigned char *rgb, int rgb_line, int columns, int rows, int bpp) */
+
 /* Convert Bayer image to RGB image using Generalized Pei-Tam method
  * Uses fixed weights */
 /* Execution time: 3795517 clock cycles */
@@ -489,8 +481,7 @@ static inline void qc_imag_bay2rgb_gptm_fast(unsigned char *bay, int bay_line,
 		cur_rgb += 2*bpp;
 	} while (--columns);
 }
-/* }}} */
-/* {{{ [fold] qc_imag_bay2rgb_gptm(unsigned char *bay, int bay_line, unsigned char *rgb, int rgb_line, int columns, int rows, int bpp) */
+
 /* Convert Bayer image to RGB image using Generalized Pei-Tam method (See:
  * "Effective Color Interpolation in CCD Color Filter Arrays Using Signal Correlation"
  * IEEE Transactions on Circuits and Systems for Video Technology, vol. 13, no. 6, June 2003.
@@ -627,11 +618,9 @@ static inline void qc_imag_bay2rgb_gptm(unsigned char *bay, int bay_line,
 		cur_rgb += 2*bpp;
 	} while (--columns);
 }
-/* }}} */
 
 /* Following routines work with 10 bit RAW bayer data (16 bits per pixel) */
 
-/* {{{ [fold] qc_imag_bay2rgb_cottnoip10(unsigned short *bay, int bay_line, unsigned char *rgb, int rgb_line, int columns, int rows, int bpp) */
 /* Convert bayer image to RGB image using 0.5 displaced nearest neighbor.
  * bay = points to the bayer image data (upper left pixel is green)
  * bay_line = short ints between the beginnings of two consecutive rows
@@ -691,8 +680,7 @@ static inline void qc_imag_bay2rgb_cottnoip10(unsigned short *bay, int bay_line,
 	qc_imag_writergb10(cur_rgb+rgb_line,     bpp, cur_bay[1], cur_bay[bay_line+1], cur_bay[bay_line]);
 	qc_imag_writergb10(cur_rgb+rgb_line+bpp, bpp, cur_bay[1], cur_bay[bay_line+1], cur_bay[bay_line]);
 }
-/* }}} */
-/* {{{ [fold] qc_imag_bay2rgb_gptm10(unsigned short *bay, int bay_line, unsigned char *rgb, int rgb_line, int columns, int rows, int bpp) */
+
 /* Convert Bayer image to RGB image using Generalized Pei-Tam method (See:
  * "Effective Color Interpolation in CCD Color Filter Arrays Using Signal Correlation"
  * IEEE Transactions on Circuits and Systems for Video Technology, vol. 13, no. 6, June 2003.
@@ -830,9 +818,7 @@ static inline void qc_imag_bay2rgb_gptm10(unsigned short *bay, int bay_line,
 		cur_rgb += 2*bpp;
 	} while (--columns);
 }
-/* }}} */
 
-/* {{{ [fold] List of available conversion algorithms */
 static struct {
 	char *name;
 	void (*algo8)(unsigned char *bay, int bay_line, unsigned char *rgb, int rgb_line, int columns, int rows, int bpp);
@@ -845,7 +831,6 @@ static struct {
 	{ "gptm_fast", qc_imag_bay2rgb_gptm_fast, NULL },
 	{ "gptm",      qc_imag_bay2rgb_gptm, qc_imag_bay2rgb_gptm10 },
 };
-/* }}} */
 
 static void (*algo8)(unsigned char *bay, int bay_line, unsigned char *rgb, int rgb_line, int columns, int rows, int bpp)
 	= qc_imag_bay2rgb_gptm;
@@ -854,7 +839,6 @@ static void (*algo10)(unsigned short *bay, int bay_line, unsigned char *rgb, int
 
 /* Public interface */
 
-/* {{{ [fold] void qc_imag_bay2rgb8(...) */
 void qc_imag_bay2rgb8(unsigned char *bay, int bay_line,
 		unsigned char *rgb, int rgb_line,
 		unsigned int columns, unsigned int rows, int bpp)
@@ -865,8 +849,7 @@ void qc_imag_bay2rgb8(unsigned char *bay, int bay_line,
 	}
 	algo8(bay, bay_line, rgb, rgb_line, columns, rows, bpp);
 }
-/* }}} */
-/* {{{ [fold] void qc_imag_bay2rgb10(...) */
+
 /* bay_line = image stride in the RAW data in bytes */
 void qc_imag_bay2rgb10(unsigned char *bay, int bay_line,
 		unsigned char *rgb, int rgb_line,
@@ -893,14 +876,12 @@ void qc_imag_bay2rgb10(unsigned char *bay, int bay_line,
 #endif
 	algo10((unsigned short *)bay, bay_line, rgb, rgb_line, columns, rows, bpp);
 }
-/* }}} */
-/* {{{ [fold] void qc_set_sharpness(int sharpness) */
+
 void qc_set_sharpness(int sharpness)
 {
 	qc_sharpness = sharpness;
 }
-/* }}} */
-/* {{{ [fold] void qc_print_algorithms(void) */
+
 void qc_print_algorithms(void)
 {
 	int i;
@@ -911,8 +892,7 @@ void qc_print_algorithms(void)
 		printf(")\n");
 	}
 }
-/* }}} */
-/* {{{ [fold] void qc_set_algorithm(const char *name) */
+
 void qc_set_algorithm(const char *name)
 {
 	int i;
@@ -925,6 +905,3 @@ void qc_set_algorithm(const char *name)
 	algo8 = algorithms[i].algo8;
 	algo10 = algorithms[i].algo10;
 }
-/* }}} */
-
-/* EOF */

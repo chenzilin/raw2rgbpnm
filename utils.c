@@ -34,7 +34,6 @@
 
 extern char *progname;
 
-/* {{{ [fold] void error(char *msg) */
 void error(const char *format, ...) {
 	va_list ap;
 	int err;
@@ -52,4 +51,3 @@ void error(const char *format, ...) {
 		err = 1;
 	exit(err);
 }
-/* }}} */
