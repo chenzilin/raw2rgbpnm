@@ -53,23 +53,3 @@ void error(const char *format, ...) {
 	exit(err);
 }
 /* }}} */
-/* {{{ [fold] int xioctl(int fd, int request, void *arg) */
-int xioctl(int fd, int request, void *arg)
-{
-	int r;
-	fflush(stdout);
-	r = ioctl(fd, request, arg);
-	if (r == -1) error("ioctl(%i,%i,%p) error %i\n", fd, request, arg, r);
-	return r;
-}
-/* }}} */
-/* {{{ [fold] int eioctl(int fd, int request, void *arg) */
-int eioctl(int fd, int request, void *arg)
-{
-	int r;
-	fflush(stdout);
-	r = ioctl(fd, request, arg);
-	if (r == -1) printf("WARNING: ioctl(%i,%i,%p) error %i\n", fd, request, arg, r);
-	return r;
-}
-/* }}} */
