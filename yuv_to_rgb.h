@@ -90,10 +90,10 @@ static void inline yuv_to_rgb(int y, int u, int v, int *r, int *g, int *b)
 #define YUV_ONE		(1 << YUV_SHIFT)
 #define YUV_HALF	(1 << (YUV_SHIFT - 1))
 
-#define C_1		(-91882)	//   ((int)(-1.40200 * YUV_ONE))  
+#define C_1		(-91882)	//   ((int)(-1.40200 * YUV_ONE))
 #define C_2		(-22554)	//   ((int)(-0.34414 * YUV_ONE))
-#define C_3		(46801)		//   ((int)( 0.71414 * YUV_ONE))     
-#define C_4		(116129)	//   ((int)( 1.77200 * YUV_ONE))  
+#define C_3		(46801)		//   ((int)( 0.71414 * YUV_ONE))
+#define C_4		(116129)	//   ((int)( 1.77200 * YUV_ONE))
 
 	u -= 127;
 	v -= 127;

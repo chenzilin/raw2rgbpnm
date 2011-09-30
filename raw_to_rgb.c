@@ -129,7 +129,7 @@ static inline void qc_imag_writergb10(void *addr, int bpp,
  * cott is quite much faster, but possibly with slightly worse image quality */
 static inline void qc_imag_bay2rgb_horip(unsigned char *bay, int bay_line,
 		unsigned char *rgb, int rgb_line,
-		int columns, int rows, int bpp) 
+		int columns, int rows, int bpp)
 {
 	unsigned char *cur_bay, *cur_rgb;
 	int bay_line2, rgb_line2;
@@ -142,7 +142,7 @@ static inline void qc_imag_bay2rgb_horip(unsigned char *bay, int bay_line,
 	row_cnt = rows / 2;
 	bay_line2 = 2*bay_line;
 	rgb_line2 = 2*rgb_line;
-	
+
 	do {
 		qc_imag_writergb(rgb+0,        bpp, bay[1], bay[0], bay[bay_line]);
 		qc_imag_writergb(rgb+rgb_line, bpp, bay[1], bay[0], bay[bay_line]);
@@ -179,7 +179,7 @@ static inline void qc_imag_bay2rgb_horip(unsigned char *bay, int bay_line,
 /* Execution time: 2714077-2827455 clock cycles for CIF image (Pentium II) */
 static inline void qc_imag_bay2rgb_ip(unsigned char *bay, int bay_line,
 		unsigned char *rgb, int rgb_line,
-		int columns, int rows, int bpp) 
+		int columns, int rows, int bpp)
 {
 	unsigned char *cur_bay, *cur_rgb;
 	int bay_line2, rgb_line2;
@@ -193,7 +193,7 @@ static inline void qc_imag_bay2rgb_ip(unsigned char *bay, int bay_line,
 	bay_line2 = 2*bay_line;
 	rgb_line2 = 2*rgb_line;
 
-	/* First scanline is handled here as a special case */	
+	/* First scanline is handled here as a special case */
 	qc_imag_writergb(rgb, bpp, bay[1], bay[0], bay[bay_line]);
 	cur_bay = bay + 1;
 	cur_rgb = rgb + bpp;
@@ -247,7 +247,7 @@ static inline void qc_imag_bay2rgb_ip(unsigned char *bay, int bay_line,
 		rgb += rgb_line2;
 	} while (--row_cnt);
 
-	/* Last scanline is handled here as a special case */	
+	/* Last scanline is handled here as a special case */
 	green = ((unsigned int)bay[-bay_line] + bay[1]) / 2;
 	qc_imag_writergb(rgb, bpp, bay[-bay_line+1], green, bay[0]);
 	cur_bay = bay + 1;
@@ -424,7 +424,7 @@ static inline void qc_imag_bay2rgb_gptm_fast(unsigned char *bay, int bay_line,
 		cur_bay = bay;
 		cur_rgb = rgb;
 		columns = total_columns;
-		
+
 		/* Process first 2x2 pixel block in a row here */
 		qc_imag_writergb(cur_rgb+0,            bpp, cur_bay[1], cur_bay[0],          cur_bay[bay_line]);
 		qc_imag_writergb(cur_rgb+bpp,          bpp, cur_bay[1], cur_bay[0],          cur_bay[bay_line]);
@@ -527,7 +527,7 @@ static inline void qc_imag_bay2rgb_gptm(unsigned char *bay, int bay_line,
 
 	/* Compute weights */
 	wu = (qc_sharpness * qc_sharpness) >> 16;
- 	wu = (wu * wu) >> 16;
+	wu = (wu * wu) >> 16;
 	wrg = (wrg0 * wu) >> 10;
 	wbg = (wbg0 * wu) >> 10;
 	wgr = (wgr0 * wu) >> 10;
@@ -561,7 +561,7 @@ static inline void qc_imag_bay2rgb_gptm(unsigned char *bay, int bay_line,
 		cur_bay = bay;
 		cur_rgb = rgb;
 		columns = total_columns;
-		
+
 		/* Process first 2x2 pixel block in a row here */
 		qc_imag_writergb(cur_rgb+0,            bpp, cur_bay[1], cur_bay[0],          cur_bay[bay_line]);
 		qc_imag_writergb(cur_rgb+bpp,          bpp, cur_bay[1], cur_bay[0],          cur_bay[bay_line]);
@@ -727,7 +727,7 @@ static inline void qc_imag_bay2rgb_gptm10(unsigned short *bay, int bay_line,
 
 	/* Compute weights */
 	wu = (qc_sharpness * qc_sharpness) >> 16;
- 	wu = (wu * wu) >> 16;
+	wu = (wu * wu) >> 16;
 	wrg = (wrg0 * wu) >> 10;
 	wbg = (wbg0 * wu) >> 10;
 	wgr = (wgr0 * wu) >> 10;
@@ -761,7 +761,7 @@ static inline void qc_imag_bay2rgb_gptm10(unsigned short *bay, int bay_line,
 		cur_bay = bay;
 		cur_rgb = rgb;
 		columns = total_columns;
-		
+
 		/* Process first 2x2 pixel block in a row here */
 		qc_imag_writergb10(cur_rgb+0,            bpp, cur_bay[1], cur_bay[0],          cur_bay[bay_line]);
 		qc_imag_writergb10(cur_rgb+bpp,          bpp, cur_bay[1], cur_bay[0],          cur_bay[bay_line]);
