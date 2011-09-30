@@ -291,14 +291,14 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 	}
 }
 
-static int parse_format(const char *p, unsigned int *w, unsigned int *h)
+static int parse_format(const char *p, unsigned int *w, unsigned int *h, char sep)
 {
 	char *end;
 
 	for (; isspace(*p); ++p);
 
 	*w = strtoul(p, &end, 10);
-	if (*end != 'x')
+	if (*end != sep)
 		return -1;
 
 	p = end + 1;
@@ -367,14 +367,16 @@ int main(int argc, char *argv[])
 			algorithm_name = optarg;
 			break;
 		case 's':
-			if (parse_format(optarg, &size[0], &size[1]) < 0) {
+			if (parse_format(optarg, &size[0], &size[1], 'x') < 0) {
 				error("bad size");
 				exit(0);
 			}
 			break;
 		case 'c':
-			crop[0] = atoi(optarg);
-			crop[1] = atoi(strchr(optarg,',')+1);
+			if (parse_format(optarg, &crop[0], &crop[1], ',') < 0) {
+				error("bad crop");
+				exit(0);
+			}
 			printf("Configured cropping of %i,%i\n", crop[0], crop[1]);
 			break;
 		case 'n':
