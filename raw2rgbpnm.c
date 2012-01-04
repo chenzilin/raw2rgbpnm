@@ -146,7 +146,10 @@ static const int resolutions[][2] = {
 static unsigned char *read_raw_data(char *filename, int framenum, int size[2], int bpp)
 {
 	/* Get file size */
+	unsigned int line_length;
+	unsigned int padding = 0;
 	unsigned char *b = NULL;
+	unsigned int i;
 	int offset;
 	FILE *f = fopen(filename, "rb");
 	if (!f) error("fopen failed");
@@ -159,7 +162,6 @@ static unsigned char *read_raw_data(char *filename, int framenum, int size[2], i
 
 	/* Check image resolution */
 	if (size[0]<=0 || size[1]<=0) {
-		unsigned int i;
 		if (framenum>=0) error("can not automatically detect frame size with multiple frames");
 		for (i=0; i<SIZE(resolutions); i++)
 			if (resolutions[i][0]*resolutions[i][1]*bpp==file_size*8) break;
@@ -170,7 +172,15 @@ static unsigned char *read_raw_data(char *filename, int framenum, int size[2], i
 
 	if (framenum<0 && (file_size*8 < size[0]*size[1]*bpp)) error("out of input data");
 	if (framenum<0 && (file_size*8 > size[0]*size[1]*bpp)) printf("warning: too large image file\n");
-	if (((file_size*8) % (size[0]*size[1]*bpp)) != 0) printf("warning: input size not multiple of frame size\n");
+	if (((file_size*8) % (size[0]*size[1]*bpp)) != 0) {
+		if (framenum < 0 && (file_size % size[1] == 0)) {
+			line_length = size[0] * bpp / 8;
+			padding = file_size / size[1] - line_length;
+			printf("%u padding bytes detected at end of line\n", padding);
+		} else {
+			printf("warning: input size not multiple of frame size\n");
+		}
+	}
 
 	/* Go to the correct position in the file */
 	if (framenum>=0) printf("Reading frame %i...\n", framenum);
@@ -182,8 +192,20 @@ static unsigned char *read_raw_data(char *filename, int framenum, int size[2], i
 
 	/* Read data */
 	b = xalloc((size[0]*size[1]*bpp+7)/8);
-	r = fread(b, (size[0]*size[1]*bpp+7)/8, 1, f);
-	if (r!=1) error("fread");
+	if (padding == 0) {
+		r = fread(b, (size[0]*size[1]*bpp+7)/8, 1, f);
+		if (r != 1)
+			error("fread");
+	} else {
+		for (i = 0; i < size[1]; ++i) {
+			r = fread(b + i * line_length, line_length, 1, f);
+			if (r != 1)
+				error("fread");
+			r = fseek(f, padding, SEEK_CUR);
+			if (r != 0)
+				error("fseek");
+		}
+	}
 out:	fclose(f);
 	return b;
 }
