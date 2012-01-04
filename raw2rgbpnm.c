@@ -288,6 +288,28 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 		}
 		free(buf);
 		break;
+	case V4L2_PIX_FMT_BGR24:
+		swaprb = !swaprb;
+		/* Fallthrough */
+	case V4L2_PIX_FMT_RGB24:
+		do {
+			scr_x = 0;
+			img_x = 0;
+			cr = 0;
+			do {
+				r = src[img_y*src_stride + img_x*3 + 0];
+				g = src[img_y*src_stride + img_x*3 + 1];
+				b = src[img_y*src_stride + img_x*3 + 2];
+				rgb[scr_y*rgb_stride+3*scr_x+0] = swaprb ? b : r;
+				rgb[scr_y*rgb_stride+3*scr_x+1] = g;
+				rgb[scr_y*rgb_stride+3*scr_x+2] = swaprb ? r : b;
+				scr_x += scr_step;
+				img_x += img_step;
+			} while (img_x<src_size[0]);
+			scr_y += scr_step;
+			img_y += img_step;
+		} while (img_y<src_size[1]);
+		break;
 	}
 }
 
