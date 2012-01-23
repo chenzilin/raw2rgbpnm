@@ -212,6 +212,7 @@ out:	fclose(f);
 
 static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int format, unsigned char *rgb, int rgb_stride)
 {
+	unsigned char *src_luma, *src_chroma;
 	unsigned char *buf;
 	int r, g, b, a, cr, cb;
 	int src_x, src_y;
@@ -257,6 +258,39 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 			dst_y += dst_step;
 		}
 		break;
+
+	case V4L2_PIX_FMT_NV21:
+		color_pos = 0;
+	case V4L2_PIX_FMT_NV12:
+		src_luma = src;
+		src_chroma = &src[src_size[0] * src_size[1]];
+		src_stride = src_stride * 8 / 12;
+
+		for (src_y = 0, dst_y = 0; dst_y < src_size[1]; src_y += src_step, dst_y += dst_step) {
+			cr = 0;
+
+			for (dst_x = 0, src_x = 0; dst_x < src_size[0]; ) {
+				a  = src_luma[dst_y*src_stride + dst_x];
+				cb = src_chroma[(dst_y/2)*src_stride + dst_x + 1 - color_pos];
+				yuv_to_rgb(a,cb,cr, &r, &g, &b);
+				rgb[src_y*rgb_stride+3*src_x+0] = swaprb ? b : r;
+				rgb[src_y*rgb_stride+3*src_x+1] = g;
+				rgb[src_y*rgb_stride+3*src_x+2] = swaprb ? r : b;
+				src_x += src_step;
+				dst_x += dst_step;
+
+				a  = src_luma[dst_y*src_stride + dst_x];
+				cr = src_chroma[(dst_y/2)*src_stride + dst_x + color_pos - 1];
+				yuv_to_rgb(a,cb,cr, &r, &g, &b);
+				rgb[src_y*rgb_stride+3*src_x+0] = swaprb ? b : r;
+				rgb[src_y*rgb_stride+3*src_x+1] = g;
+				rgb[src_y*rgb_stride+3*src_x+2] = swaprb ? r : b;
+				src_x += src_step;
+				dst_x += dst_step;
+			}
+		}
+		break;
+
 	case V4L2_PIX_FMT_SBGGR16:
 		printf("WARNING: bayer phase not supported -> expect bad colors\n");
 	case V4L2_PIX_FMT_BAYER10_GrRBGb:
