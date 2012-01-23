@@ -214,15 +214,15 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 {
 	unsigned char *buf;
 	int r, g, b, a, cr, cb;
-	int scr_x, scr_y;
-	int scr_step;
+	int src_x, src_y;
+	int src_step;
 	int img_x, img_y;
 	int img_step;
 	int color_pos = 1;
 
-	scr_step = 1;
+	src_step = 1;
 	img_step = downscaling;
-	scr_y = 0;
+	src_y = 0;
 	img_y = 0;
 
 	switch (format) {
@@ -234,29 +234,29 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 		/* Continue */
 	case V4L2_PIX_FMT_YUYV:		/* Packed YUV 4:2:2; FIXME: downscale should be odd, otherwise cr is wrong */
 		do {
-			scr_x = 0;
+			src_x = 0;
 			img_x = 0;
 			cr = 0;
 			do {
 				a  = src[img_y*src_stride + img_x*2];
 				cb = src[img_y*src_stride + img_x*2 + color_pos];
 				yuv_to_rgb(a,cb,cr, &r, &g, &b);
-				rgb[scr_y*rgb_stride+3*scr_x+0] = swaprb ? b : r;
-				rgb[scr_y*rgb_stride+3*scr_x+1] = g;
-				rgb[scr_y*rgb_stride+3*scr_x+2] = swaprb ? r : b;
-				scr_x += scr_step;
+				rgb[src_y*rgb_stride+3*src_x+0] = swaprb ? b : r;
+				rgb[src_y*rgb_stride+3*src_x+1] = g;
+				rgb[src_y*rgb_stride+3*src_x+2] = swaprb ? r : b;
+				src_x += src_step;
 				img_x += img_step;
 
 				a  = src[img_y*src_stride + img_x*2];
 				cr = src[img_y*src_stride + img_x*2 + color_pos];
 				yuv_to_rgb(a,cb,cr, &r, &g, &b);
-				rgb[scr_y*rgb_stride+3*scr_x+0] = swaprb ? b : r;
-				rgb[scr_y*rgb_stride+3*scr_x+1] = g;
-				rgb[scr_y*rgb_stride+3*scr_x+2] = swaprb ? r : b;
-				scr_x += scr_step;
+				rgb[src_y*rgb_stride+3*src_x+0] = swaprb ? b : r;
+				rgb[src_y*rgb_stride+3*src_x+1] = g;
+				rgb[src_y*rgb_stride+3*src_x+2] = swaprb ? r : b;
+				src_x += src_step;
 				img_x += img_step;
 			} while (img_x<src_size[0]);
-			scr_y += scr_step;
+			src_y += src_step;
 			img_y += img_step;
 		} while (img_y<src_size[1]);
 		break;
@@ -315,20 +315,20 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 		/* Fallthrough */
 	case V4L2_PIX_FMT_RGB24:
 		do {
-			scr_x = 0;
+			src_x = 0;
 			img_x = 0;
 			cr = 0;
 			do {
 				r = src[img_y*src_stride + img_x*3 + 0];
 				g = src[img_y*src_stride + img_x*3 + 1];
 				b = src[img_y*src_stride + img_x*3 + 2];
-				rgb[scr_y*rgb_stride+3*scr_x+0] = swaprb ? b : r;
-				rgb[scr_y*rgb_stride+3*scr_x+1] = g;
-				rgb[scr_y*rgb_stride+3*scr_x+2] = swaprb ? r : b;
-				scr_x += scr_step;
+				rgb[src_y*rgb_stride+3*src_x+0] = swaprb ? b : r;
+				rgb[src_y*rgb_stride+3*src_x+1] = g;
+				rgb[src_y*rgb_stride+3*src_x+2] = swaprb ? r : b;
+				src_x += src_step;
 				img_x += img_step;
 			} while (img_x<src_size[0]);
-			scr_y += scr_step;
+			src_y += src_step;
 			img_y += img_step;
 		} while (img_y<src_size[1]);
 		break;
