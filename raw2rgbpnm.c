@@ -216,14 +216,14 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 	int r, g, b, a, cr, cb;
 	int src_x, src_y;
 	int src_step;
-	int img_x, img_y;
-	int img_step;
+	int dst_x, dst_y;
+	int dst_step;
 	int color_pos = 1;
 
 	src_step = 1;
-	img_step = downscaling;
+	dst_step = downscaling;
 	src_y = 0;
-	img_y = 0;
+	dst_y = 0;
 
 	switch (format) {
 	default:
@@ -235,38 +235,38 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 	case V4L2_PIX_FMT_YUYV:		/* Packed YUV 4:2:2; FIXME: downscale should be odd, otherwise cr is wrong */
 		do {
 			src_x = 0;
-			img_x = 0;
+			dst_x = 0;
 			cr = 0;
 			do {
-				a  = src[img_y*src_stride + img_x*2];
-				cb = src[img_y*src_stride + img_x*2 + color_pos];
+				a  = src[dst_y*src_stride + dst_x*2];
+				cb = src[dst_y*src_stride + dst_x*2 + color_pos];
 				yuv_to_rgb(a,cb,cr, &r, &g, &b);
 				rgb[src_y*rgb_stride+3*src_x+0] = swaprb ? b : r;
 				rgb[src_y*rgb_stride+3*src_x+1] = g;
 				rgb[src_y*rgb_stride+3*src_x+2] = swaprb ? r : b;
 				src_x += src_step;
-				img_x += img_step;
+				dst_x += dst_step;
 
-				a  = src[img_y*src_stride + img_x*2];
-				cr = src[img_y*src_stride + img_x*2 + color_pos];
+				a  = src[dst_y*src_stride + dst_x*2];
+				cr = src[dst_y*src_stride + dst_x*2 + color_pos];
 				yuv_to_rgb(a,cb,cr, &r, &g, &b);
 				rgb[src_y*rgb_stride+3*src_x+0] = swaprb ? b : r;
 				rgb[src_y*rgb_stride+3*src_x+1] = g;
 				rgb[src_y*rgb_stride+3*src_x+2] = swaprb ? r : b;
 				src_x += src_step;
-				img_x += img_step;
-			} while (img_x<src_size[0]);
+				dst_x += dst_step;
+			} while (dst_x<src_size[0]);
 			src_y += src_step;
-			img_y += img_step;
-		} while (img_y<src_size[1]);
+			dst_y += dst_step;
+		} while (dst_y<src_size[1]);
 		break;
 	case V4L2_PIX_FMT_SBGGR16:
 		printf("WARNING: bayer phase not supported -> expect bad colors\n");
 	case V4L2_PIX_FMT_BAYER10_GrRBGb:
 	case V4L2_PIX_FMT_SGRBG10:
-		for (img_y=0; img_y<src_size[1]; img_y++) {
-			for (img_x=0; img_x<src_size[0]; img_x++) {
-				unsigned short *p = (unsigned short *)&(src[src_stride*img_y+img_x*2]);
+		for (dst_y=0; dst_y<src_size[1]; dst_y++) {
+			for (dst_x=0; dst_x<src_size[0]; dst_x++) {
+				unsigned short *p = (unsigned short *)&(src[src_stride*dst_y+dst_x*2]);
 				int v = *p;
 				if (highbits) v >>= 6;
 				if (v<0 || v>=(1<<10))
@@ -282,12 +282,12 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 		buf = malloc(src_size[0] * src_size[1] * 3);
 		if (buf==NULL) error("out of memory");
 		qc_imag_bay2rgb10(src, src_stride, buf, src_size[0]*3, src_size[0], src_size[1], 3);
-		for (img_y=0; img_y<src_size[1]; img_y++) {
-			for (img_x=0; img_x<src_size[0]; img_x++) {
-				unsigned char *p = buf + src_size[0]*3*img_y + img_x*3;
-				rgb[img_y*rgb_stride+3*img_x+0] = swaprb ? p[2] : p[0];
-				rgb[img_y*rgb_stride+3*img_x+1] = p[1];
-				rgb[img_y*rgb_stride+3*img_x+2] = swaprb ? p[0] : p[2];
+		for (dst_y=0; dst_y<src_size[1]; dst_y++) {
+			for (dst_x=0; dst_x<src_size[0]; dst_x++) {
+				unsigned char *p = buf + src_size[0]*3*dst_y + dst_x*3;
+				rgb[dst_y*rgb_stride+3*dst_x+0] = swaprb ? p[2] : p[0];
+				rgb[dst_y*rgb_stride+3*dst_x+1] = p[1];
+				rgb[dst_y*rgb_stride+3*dst_x+2] = swaprb ? p[0] : p[2];
 			}
 		}
 		free(buf);
@@ -300,12 +300,12 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 		buf = malloc(src_size[0] * src_size[1] * 3);
 		if (buf==NULL) error("out of memory");
 		qc_imag_bay2rgb8(src, src_stride, buf, src_size[0]*3, src_size[0], src_size[1], 3);
-		for (img_y=0; img_y<src_size[1]; img_y++) {
-			for (img_x=0; img_x<src_size[0]; img_x++) {
-				unsigned char *p = buf + src_size[0]*3*img_y + img_x*3;
-				rgb[img_y*rgb_stride+3*img_x+0] = swaprb ? p[2] : p[0];
-				rgb[img_y*rgb_stride+3*img_x+1] = p[1];
-				rgb[img_y*rgb_stride+3*img_x+2] = swaprb ? p[0] : p[2];
+		for (dst_y=0; dst_y<src_size[1]; dst_y++) {
+			for (dst_x=0; dst_x<src_size[0]; dst_x++) {
+				unsigned char *p = buf + src_size[0]*3*dst_y + dst_x*3;
+				rgb[dst_y*rgb_stride+3*dst_x+0] = swaprb ? p[2] : p[0];
+				rgb[dst_y*rgb_stride+3*dst_x+1] = p[1];
+				rgb[dst_y*rgb_stride+3*dst_x+2] = swaprb ? p[0] : p[2];
 			}
 		}
 		free(buf);
@@ -316,21 +316,21 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 	case V4L2_PIX_FMT_RGB24:
 		do {
 			src_x = 0;
-			img_x = 0;
+			dst_x = 0;
 			cr = 0;
 			do {
-				r = src[img_y*src_stride + img_x*3 + 0];
-				g = src[img_y*src_stride + img_x*3 + 1];
-				b = src[img_y*src_stride + img_x*3 + 2];
+				r = src[dst_y*src_stride + dst_x*3 + 0];
+				g = src[dst_y*src_stride + dst_x*3 + 1];
+				b = src[dst_y*src_stride + dst_x*3 + 2];
 				rgb[src_y*rgb_stride+3*src_x+0] = swaprb ? b : r;
 				rgb[src_y*rgb_stride+3*src_x+1] = g;
 				rgb[src_y*rgb_stride+3*src_x+2] = swaprb ? r : b;
 				src_x += src_step;
-				img_x += img_step;
-			} while (img_x<src_size[0]);
+				dst_x += dst_step;
+			} while (dst_x<src_size[0]);
 			src_y += src_step;
-			img_y += img_step;
-		} while (img_y<src_size[1]);
+			dst_y += dst_step;
+		} while (dst_y<src_size[1]);
 		break;
 	}
 }
