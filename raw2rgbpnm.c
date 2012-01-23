@@ -222,8 +222,6 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 
 	src_step = 1;
 	dst_step = downscaling;
-	src_y = 0;
-	dst_y = 0;
 
 	switch (format) {
 	default:
@@ -233,11 +231,10 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 		src++;
 		/* Continue */
 	case V4L2_PIX_FMT_YUYV:		/* Packed YUV 4:2:2; FIXME: downscale should be odd, otherwise cr is wrong */
-		do {
-			src_x = 0;
-			dst_x = 0;
+		for (src_y = 0, dst_y = 0; dst_y < src_size[1]; src_y += src_step, dst_y += dst_step) {
 			cr = 0;
-			do {
+
+			for (src_x = 0, dst_x = 0; dst_x < src_size[0]; ) {
 				a  = src[dst_y*src_stride + dst_x*2];
 				cb = src[dst_y*src_stride + dst_x*2 + color_pos];
 				yuv_to_rgb(a,cb,cr, &r, &g, &b);
@@ -255,10 +252,10 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 				rgb[src_y*rgb_stride+3*src_x+2] = swaprb ? r : b;
 				src_x += src_step;
 				dst_x += dst_step;
-			} while (dst_x<src_size[0]);
+			}
 			src_y += src_step;
 			dst_y += dst_step;
-		} while (dst_y<src_size[1]);
+		}
 		break;
 	case V4L2_PIX_FMT_SBGGR16:
 		printf("WARNING: bayer phase not supported -> expect bad colors\n");
@@ -314,11 +311,9 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 		swaprb = !swaprb;
 		/* Fallthrough */
 	case V4L2_PIX_FMT_RGB24:
-		do {
-			src_x = 0;
-			dst_x = 0;
+		for (src_y = 0, dst_y = 0; dst_y < src_size[1]; src_y += src_step, dst_y += dst_step) {
 			cr = 0;
-			do {
+			for (src_x = 0, dst_x = 0; dst_x < src_size[0]; ) {
 				r = src[dst_y*src_stride + dst_x*3 + 0];
 				g = src[dst_y*src_stride + dst_x*3 + 1];
 				b = src[dst_y*src_stride + dst_x*3 + 2];
@@ -327,10 +322,8 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 				rgb[src_y*rgb_stride+3*src_x+2] = swaprb ? r : b;
 				src_x += src_step;
 				dst_x += dst_step;
-			} while (dst_x<src_size[0]);
-			src_y += src_step;
-			dst_y += dst_step;
-		} while (dst_y<src_size[1]);
+			}
+		}
 		break;
 	}
 }
