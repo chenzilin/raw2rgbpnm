@@ -237,26 +237,24 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 			cr = 0;
 
 			for (src_x = 0, dst_x = 0; dst_x < src_size[0]; ) {
-				a  = src[dst_y*src_stride + dst_x*2];
-				cb = src[dst_y*src_stride + dst_x*2 + color_pos];
+				a  = src[src_y*src_stride + src_x*2];
+				cb = src[src_y*src_stride + src_x*2 + color_pos];
 				yuv_to_rgb(a,cb,cr, &r, &g, &b);
-				rgb[src_y*rgb_stride+3*src_x+0] = swaprb ? b : r;
-				rgb[src_y*rgb_stride+3*src_x+1] = g;
-				rgb[src_y*rgb_stride+3*src_x+2] = swaprb ? r : b;
+				rgb[dst_y*rgb_stride+3*dst_x+0] = swaprb ? b : r;
+				rgb[dst_y*rgb_stride+3*dst_x+1] = g;
+				rgb[dst_y*rgb_stride+3*dst_x+2] = swaprb ? r : b;
 				src_x += src_step;
 				dst_x += dst_step;
 
-				a  = src[dst_y*src_stride + dst_x*2];
-				cr = src[dst_y*src_stride + dst_x*2 + color_pos];
+				a  = src[src_y*src_stride + src_x*2];
+				cr = src[src_y*src_stride + src_x*2 + color_pos];
 				yuv_to_rgb(a,cb,cr, &r, &g, &b);
-				rgb[src_y*rgb_stride+3*src_x+0] = swaprb ? b : r;
-				rgb[src_y*rgb_stride+3*src_x+1] = g;
-				rgb[src_y*rgb_stride+3*src_x+2] = swaprb ? r : b;
+				rgb[dst_y*rgb_stride+3*dst_x+0] = swaprb ? b : r;
+				rgb[dst_y*rgb_stride+3*dst_x+1] = g;
+				rgb[dst_y*rgb_stride+3*dst_x+2] = swaprb ? r : b;
 				src_x += src_step;
 				dst_x += dst_step;
 			}
-			src_y += src_step;
-			dst_y += dst_step;
 		}
 		break;
 
