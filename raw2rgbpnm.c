@@ -393,16 +393,21 @@ int main(int argc, char *argv[])
 	int n = 0, multiple = 0;
 
 	for (;;) {
-		int c = getopt(argc, argv, "gwr:b:a:s:c:nh");
+		int c = getopt(argc, argv, "a:b:f:ghs:w");
 		if (c==-1) break;
 		switch (c) {
-		case 'w':
-			swaprb = 1;
+		case 'a':
+			if (optarg[0]=='?') {
+				printf("Available bayer-to-rgb conversion algorithms:\n");
+				qc_print_algorithms();
+				exit(0);
+			}
+			algorithm_name = optarg;
 			break;
-		case 'g':
-			highbits = 1;
+		case 'b':
+			brightness = (int)(atof(optarg) * 256.0 + 0.5);
 			break;
-		case 'r':
+		case 'f':
 			if (optarg[0]=='?' && optarg[1]==0) {
 				int i,j;
 				printf("Supported formats:\n");
@@ -423,16 +428,23 @@ int main(int argc, char *argv[])
 				format = v4l2_pix_fmt_str[i].fmt;
 			}
 			break;
-		case 'b':
-			brightness = (int)(atof(optarg) * 256.0 + 0.5);
+		case 'g':
+			highbits = 1;
 			break;
-		case 'a':
-			if (optarg[0]=='?') {
-				printf("Available bayer-to-rgb conversion algorithms:\n");
-				qc_print_algorithms();
-				exit(0);
-			}
-			algorithm_name = optarg;
+		case 'h':
+			printf("%s - Convert headerless raw image to RGB file (PNM)\n"
+			       "Usage: %s [-h] [-w] [-s XxY] <inputfile> <outputfile>\n"
+			       "-a <algo>     Select algorithm, use \"-a ?\" for a list\n"
+			       "-b <bright>   Set brightness (multiplier) to output image (float, default 1.0)\n"
+			       "-f <format>   Specify input file format format (-f ? for list, default UYVY)\n"
+			       "-g            Use high bits for Bayer RAW 10 data\n"
+			       "-h            Show this help\n",
+			       "-n            Assume multiple input frames, extract several PNM files\n"
+			       "-s <XxY>      Specify image size\n"
+			       "-w            Swap R and B channels\n", progname, argv[0]);
+			exit(0);
+		case 'n':
+			multiple = 1;
 			break;
 		case 's':
 			if (parse_format(optarg, &size[0], &size[1]) < 0) {
@@ -440,21 +452,9 @@ int main(int argc, char *argv[])
 				exit(0);
 			}
 			break;
-		case 'n':
-			multiple = 1;
+		case 'w':
+			swaprb = 1;
 			break;
-		case 'h':
-			printf("%s - Convert headerless raw image to RGB file (PNM)\n"
-			       "Usage: %s [-h] [-w] [-s XxY] <inputfile> <outputfile>\n"
-			       "-s <XxY>      Specify image size\n"
-			       "-r <format>   Specify input file format format (-r ? for list, default UYVY)\n"
-			       "-b <bright>   Set brightness (multiplier) to output image (float, default 1.0)\n"
-			       "-a <algo>     Select algorithm, use \"-a ?\" for a list\n"
-			       "-w            Swap R and B channels\n"
-			       "-g            Use high bits for Bayer RAW 10 data\n"
-			       "-n            Assume multiple input frames, extract several PNM files\n"
-			       "-h            Show this help\n", progname, argv[0]);
-			exit(0);
 		default:
 			error("bad argument");
 		}
