@@ -857,7 +857,7 @@ void qc_imag_bay2rgb10(unsigned char *bay, int bay_line,
 {
 #if DETECT_BADVAL
 	int maxval = 0;
-	int x, y;
+	unsigned int x, y;
 #endif
 	if (algo10==NULL) {
 		printf("No such 10-bit algorithm\n");
@@ -884,7 +884,7 @@ void qc_set_sharpness(int sharpness)
 
 void qc_print_algorithms(void)
 {
-	int i;
+	unsigned int i;
 	for (i=0; i<SIZE(algorithms); i++) {
 		printf("\t%s (", algorithms[i].name);
 		if (algorithms[i].algo8) printf("8-bit");
@@ -895,7 +895,7 @@ void qc_print_algorithms(void)
 
 void qc_set_algorithm(const char *name)
 {
-	int i;
+	unsigned int i;
 	for (i=0; i<SIZE(algorithms); i++)
 		if (strcmp(name, algorithms[i].name)==0) break;
 	if (i>=SIZE(algorithms)) {

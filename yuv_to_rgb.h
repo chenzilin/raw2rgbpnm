@@ -49,7 +49,7 @@
 #define CLIP(x)			CLAMP(x,0,255)
 #endif
 
-static void inline yuv_to_rgb(int y, int u, int v, int *r, int *g, int *b)
+static inline void yuv_to_rgb(int y, int u, int v, int *r, int *g, int *b)
 {
 #if 0
 	/* Video demystified; JFIF color space (http://www.fourcc.org/fccyvrgb.php) */

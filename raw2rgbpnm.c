@@ -23,6 +23,7 @@
  * 02110-1301 USA
  */
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -108,7 +109,7 @@ static void *xalloc(int size)
 
 static const char *get_pix_fmt(__u32 f)
 {
-	int i;
+	unsigned int i;
 	for (i=0; i<SIZE(v4l2_pix_fmt_str); i++) {
 		if (v4l2_pix_fmt_str[i].fmt==f) return v4l2_pix_fmt_str[i].name;
 	};
@@ -117,7 +118,7 @@ static const char *get_pix_fmt(__u32 f)
 
 static int get_pix_bpp(__u32 f)
 {
-	int i;
+	unsigned int i;
 	for (i=0; i<SIZE(v4l2_pix_fmt_str); i++) {
 		if (v4l2_pix_fmt_str[i].fmt==f) return v4l2_pix_fmt_str[i].bpp;
 	};
@@ -197,7 +198,7 @@ static unsigned char *read_raw_data(char *filename, int framenum, int size[2], i
 		if (r != 1)
 			error("fread");
 	} else {
-		for (i = 0; i < size[1]; ++i) {
+		for (i = 0; i < (unsigned int)size[1]; ++i) {
 			r = fread(b + i * line_length, line_length, 1, f);
 			if (r != 1)
 				error("fread");
@@ -362,7 +363,7 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 	}
 }
 
-static int parse_format(const char *p, unsigned int *w, unsigned int *h)
+static int parse_format(const char *p, int *w, int *h)
 {
 	char *end;
 
@@ -409,7 +410,7 @@ int main(int argc, char *argv[])
 			break;
 		case 'f':
 			if (optarg[0]=='?' && optarg[1]==0) {
-				int i,j;
+				unsigned int i,j;
 				printf("Supported formats:\n");
 				for (i=0; i<SIZE(v4l2_pix_fmt_str); i++) {
 					for (j=0; v4l2_pix_fmt_str[i].name[j]!=' ' && v4l2_pix_fmt_str[i].name[j]!=0; j++)
@@ -418,7 +419,7 @@ int main(int argc, char *argv[])
 				};
 				exit(0);
 			} else {
-				int i,j;
+				unsigned int i,j;
 				for (i=0; i<SIZE(v4l2_pix_fmt_str); i++) {
 					for (j=0; v4l2_pix_fmt_str[i].name[j]!=' ' && v4l2_pix_fmt_str[i].name[j]!=0; j++);
 					if (memcmp(v4l2_pix_fmt_str[i].name, optarg, j)==0 &&
@@ -441,7 +442,7 @@ int main(int argc, char *argv[])
 			       "-h            Show this help\n",
 			       "-n            Assume multiple input frames, extract several PNM files\n"
 			       "-s <XxY>      Specify image size\n"
-			       "-w            Swap R and B channels\n", progname, argv[0]);
+			       "-w            Swap R and B channels\n", argv[0]);
 			exit(0);
 		case 'n':
 			multiple = 1;
