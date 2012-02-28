@@ -35,7 +35,6 @@
 #include "raw_to_rgb.h"
 #include "yuv_to_rgb.h"
 
-#define V4L2_PIX_FMT_BAYER10_GrRBGb	1234567
 #ifndef V4L2_PIX_FMT_SGRBG10
 #define V4L2_PIX_FMT_SGRBG10		v4l2_fourcc('B','A','1','0') /* 10bit raw bayer  */
 #endif
@@ -94,9 +93,9 @@ static const struct {
 	{ V4L2_PIX_FMT_PWC1,     -1,  "PWC1 (pwc older webcam)" },
 	{ V4L2_PIX_FMT_PWC2,     -1,  "PWC2 (pwc newer webcam)" },
 	{ V4L2_PIX_FMT_ET61X251, -1,  "ET61X251 (ET61X251 compression)" },
-	{ V4L2_PIX_FMT_BAYER10_GrRBGb, -1, "BAYER10_GrRBGb (from sensor_if.h)" },
 	{ V4L2_PIX_FMT_SGRBG10,  16,  "SGRBG10 (10bit raw bayer)" },
 	{ V4L2_PIX_FMT_SGRBG10DPCM8,    8, "SGRBG10DPCM8 (10bit raw bayer DPCM compressed to 8 bits)" },
+	{ V4L2_PIX_FMT_SGRBG12,  16,  "SGRBG12 (12bit raw bayer)" },
 	{ V4L2_PIX_FMT_SBGGR16,  16,  "SBGGR16 (16 BGBG.. GRGR..)" },
 };
 
@@ -221,6 +220,7 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 	int dst_x, dst_y;
 	int dst_step;
 	int color_pos = 1;
+	int shift = 0;
 
 	src_step = 1;
 	dst_step = downscaling;
@@ -294,13 +294,18 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 
 	case V4L2_PIX_FMT_SBGGR16:
 		printf("WARNING: bayer phase not supported -> expect bad colors\n");
-	case V4L2_PIX_FMT_BAYER10_GrRBGb:
+		shift += 4;
+	case V4L2_PIX_FMT_SGRBG12:
+		shift += 2;
 	case V4L2_PIX_FMT_SGRBG10:
 		for (dst_y=0; dst_y<src_size[1]; dst_y++) {
 			for (dst_x=0; dst_x<src_size[0]; dst_x++) {
 				unsigned short *p = (unsigned short *)&(src[src_stride*dst_y+dst_x*2]);
 				int v = *p;
-				if (highbits) v >>= 6;
+				if (highbits)
+					v >>= 6;
+				else
+					v >>= shift;
 				if (v<0 || v>=(1<<10))
 					printf("WARNING: bayer image pixel values out of range (%i)\n", v);
 				v *= brightness;
