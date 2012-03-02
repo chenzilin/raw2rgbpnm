@@ -1,4 +1,4 @@
-CFLAGS = -W -Wall
+CFLAGS += -W -Wall
 
 raw2rgbpnm: raw2rgbpnm.o raw_to_rgb.o utils.o
 
