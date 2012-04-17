@@ -67,6 +67,8 @@ static const struct {
 	{ V4L2_PIX_FMT_BGR32,    32,  "BGR32 (32  BGR-8-8-8-8)" },
 	{ V4L2_PIX_FMT_RGB32,    32,  "RGB32 (32  RGB-8-8-8-8)" },
 	{ V4L2_PIX_FMT_GREY,     8,  "GREY (8  Greyscale)" },
+	{ V4L2_PIX_FMT_Y10,      16,  "Y10 (10 Greyscale)" },
+	{ V4L2_PIX_FMT_Y12,      16,  "Y12 (12 Greyscale)" },
 	{ V4L2_PIX_FMT_YVU410,   -1,  "YVU410 (9  YVU 4:1:0)" },
 	{ V4L2_PIX_FMT_YVU420,   12,  "YVU420 (12  YVU 4:2:0)" },
 	{ V4L2_PIX_FMT_YUYV,     16,  "YUYV (16  YUV 4:2:2)" },
@@ -284,6 +286,36 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 				rgb[src_y*rgb_stride+3*src_x+0] = swaprb ? b : r;
 				rgb[src_y*rgb_stride+3*src_x+1] = g;
 				rgb[src_y*rgb_stride+3*src_x+2] = swaprb ? r : b;
+				src_x += src_step;
+				dst_x += dst_step;
+			}
+		}
+		break;
+
+	case V4L2_PIX_FMT_Y12:
+		shift += 2;
+	case V4L2_PIX_FMT_Y10:
+		shift += 2;
+		for (src_y = 0, dst_y = 0; dst_y < src_size[1]; src_y += src_step, dst_y += dst_step) {
+			for (src_x = 0, dst_x = 0; dst_x < src_size[0]; ) {
+				a = (src[src_y*src_stride + src_x*2+0] |
+				     (src[src_y*src_stride + src_x*2+1] << 8)) >> shift;
+				rgb[dst_y*rgb_stride+3*dst_x+0] = a;
+				rgb[dst_y*rgb_stride+3*dst_x+1] = a;
+				rgb[dst_y*rgb_stride+3*dst_x+2] = a;
+				src_x += src_step;
+				dst_x += dst_step;
+			}
+		}
+		break;
+
+	case V4L2_PIX_FMT_GREY:
+		for (src_y = 0, dst_y = 0; dst_y < src_size[1]; src_y += src_step, dst_y += dst_step) {
+			for (src_x = 0, dst_x = 0; dst_x < src_size[0]; ) {
+				a = src[src_y*src_stride + src_x];
+				rgb[dst_y*rgb_stride+3*dst_x+0] = a;
+				rgb[dst_y*rgb_stride+3*dst_x+1] = a;
+				rgb[dst_y*rgb_stride+3*dst_x+2] = a;
 				src_x += src_step;
 				dst_x += dst_step;
 			}
