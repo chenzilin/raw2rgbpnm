@@ -174,14 +174,12 @@ static unsigned char *read_raw_data(char *filename, int framenum, int size[2], i
 
 	if (framenum<0 && (file_size*8 < size[0]*size[1]*bpp)) error("out of input data");
 	if (framenum<0 && (file_size*8 > size[0]*size[1]*bpp)) printf("warning: too large image file\n");
-	if (((file_size*8) % (size[0]*size[1]*bpp)) != 0) {
-		if (framenum < 0 && (file_size % size[1] == 0)) {
-			line_length = size[0] * bpp / 8;
-			padding = file_size / size[1] - line_length;
-			printf("%u padding bytes detected at end of line\n", padding);
-		} else {
-			printf("warning: input size not multiple of frame size\n");
-		}
+	if (framenum < 0 && (file_size % size[1] == 0)) {
+		line_length = size[0] * bpp / 8;
+		padding = file_size / size[1] - line_length;
+		printf("%u padding bytes detected at end of line\n", padding);
+	} else if ((file_size * 8) % (size[0] * size[1] * bpp) != 0) {
+		printf("warning: input size not multiple of frame size\n");
 	}
 
 	/* Go to the correct position in the file */
