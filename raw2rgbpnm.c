@@ -393,6 +393,24 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 			}
 		}
 		break;
+	case V4L2_PIX_FMT_BGR32:
+		swaprb = !swaprb;
+		/* Fallthrough */
+	case V4L2_PIX_FMT_RGB32:
+		for (src_y = 0, dst_y = 0; dst_y < src_size[1]; src_y += src_step, dst_y += dst_step) {
+			cr = 0;
+			for (src_x = 0, dst_x = 0; dst_x < src_size[0]; ) {
+				r = src[dst_y*src_stride + dst_x*4 + 0];
+				g = src[dst_y*src_stride + dst_x*4 + 1];
+				b = src[dst_y*src_stride + dst_x*4 + 2];
+				rgb[src_y*rgb_stride+3*src_x+0] = swaprb ? b : r;
+				rgb[src_y*rgb_stride+3*src_x+1] = g;
+				rgb[src_y*rgb_stride+3*src_x+2] = swaprb ? r : b;
+				src_x += src_step;
+				dst_x += dst_step;
+			}
+		}
+		break;
 	}
 }
 
