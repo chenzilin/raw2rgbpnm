@@ -374,7 +374,6 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 		/* Fallthrough */
 	case V4L2_PIX_FMT_RGB24:
 		for (src_y = 0, dst_y = 0; dst_y < src_size[1]; src_y++, dst_y++) {
-			cr = 0;
 			for (src_x = 0, dst_x = 0; dst_x < src_size[0]; ) {
 				r = src[dst_y*src_stride + dst_x*3 + 0];
 				g = src[dst_y*src_stride + dst_x*3 + 1];
