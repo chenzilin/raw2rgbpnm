@@ -51,7 +51,7 @@ static int swaprb = 0;
 static int highbits = 0;			/* Bayer RAW10 formats use high bits for data */
 static int brightness = 256;			/* 24.8 fixed point */
 
-static const struct {
+static const struct format_info {
 	__u32 fmt;
 	int bpp;		/* 0=variable, -1=unknown */
 	char *name;
@@ -107,22 +107,16 @@ static void *xalloc(int size)
 	return b;
 }
 
-static const char *get_pix_fmt(__u32 f)
+static const struct format_info *get_format_info(__u32 f)
 {
 	unsigned int i;
-	for (i=0; i<SIZE(v4l2_pix_fmt_str); i++) {
-		if (v4l2_pix_fmt_str[i].fmt==f) return v4l2_pix_fmt_str[i].name;
-	};
-	return "(unknown)";
-}
 
-static int get_pix_bpp(__u32 f)
-{
-	unsigned int i;
-	for (i=0; i<SIZE(v4l2_pix_fmt_str); i++) {
-		if (v4l2_pix_fmt_str[i].fmt==f) return v4l2_pix_fmt_str[i].bpp;
+	for (i = 0; i < SIZE(v4l2_pix_fmt_str); i++) {
+		if (v4l2_pix_fmt_str[i].fmt == f)
+			return &v4l2_pix_fmt_str[i];
 	};
-	return -1;
+
+	return NULL;
 }
 
 static const int resolutions[][2] = {
@@ -221,8 +215,6 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 	int shift = 0;
 
 	switch (format) {
-	default:
-		printf("copy_to_framebuffer: unsupported video format %s (trying YUYV)\n", get_pix_fmt(format));
 	case V4L2_PIX_FMT_UYVY:
 		color_pos = -1;
 		src++;
@@ -476,6 +468,7 @@ int main(int argc, char *argv[])
 	char *file_in = NULL, *file_out = NULL;
 	char multi_file_out[NAME_MAX];
 	int format = V4L2_PIX_FMT_UYVY;
+	const struct format_info *info;
 	int r;
 	char *algorithm_name = NULL;
 	int n = 0, multiple = 0;
@@ -553,13 +546,19 @@ int main(int argc, char *argv[])
 	file_in  = argv[optind++];
 	file_out = argv[optind++];
 
+	info = get_format_info(format);
+	if (info == NULL) {
+		printf("unsupported video format %4.4s\n", (char *)&format);
+		return 1;
+	}
+
 	/* Read, convert, and save image */
-	src = read_raw_data(file_in, multiple ? 0 : -1, size, get_pix_bpp(format));
+	src = read_raw_data(file_in, multiple ? 0 : -1, size, info->bpp);
 	printf("Image size: %ix%i, bytes per pixel: %i, format: %s\n", size[0], size[1],
-		get_pix_bpp(format), get_pix_fmt(format));
+		info->bpp, info->name);
 	dst = xalloc(size[0]*size[1]*3);
 	do {
-		raw_to_rgb(src, size[0]*get_pix_bpp(format)/8, size, format, dst, size[0]*3);
+		raw_to_rgb(src, size[0]*info->bpp/8, size, format, dst, size[0]*3);
 		sprintf(multi_file_out, "%s-%03i.pnm", file_out, n);
 		printf("Writing to file `%s'...\n", multiple ? multi_file_out : file_out);
 		f = fopen(multiple ? multi_file_out : file_out, "wb");
@@ -569,7 +568,7 @@ int main(int argc, char *argv[])
 		if (r!=1) error("write failed");
 		fclose(f);
 		if (!multiple) break;
-		src = read_raw_data(file_in, ++n, size, get_pix_bpp(format));
+		src = read_raw_data(file_in, ++n, size, info->bpp);
 	} while (src != NULL);
 	free(src);
 	free(dst);
