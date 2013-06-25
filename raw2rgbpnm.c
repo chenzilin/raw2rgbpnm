@@ -55,49 +55,53 @@ static const struct format_info {
 	__u32 fmt;
 	int bpp;		/* 0=variable, -1=unknown */
 	char *name;
+	unsigned int y_pos;
+	unsigned int cb_pos;
 } v4l2_pix_fmt_str[] = {
-	{ V4L2_PIX_FMT_RGB332,   8,  "RGB332 (8  RGB-3-3-2)" },
-	{ V4L2_PIX_FMT_RGB555,   16,  "RGB555 (16  RGB-5-5-5)" },
-	{ V4L2_PIX_FMT_RGB565,   16,  "RGB565 (16  RGB-5-6-5)" },
-	{ V4L2_PIX_FMT_RGB555X,  16,  "RGB555X (16  RGB-5-5-5 BE)" },
-	{ V4L2_PIX_FMT_RGB565X,  16,  "RGB565X (16  RGB-5-6-5 BE)" },
-	{ V4L2_PIX_FMT_BGR24,    24,  "BGR24 (24  BGR-8-8-8)" },
-	{ V4L2_PIX_FMT_RGB24,    24,  "RGB24 (24  RGB-8-8-8)" },
-	{ V4L2_PIX_FMT_BGR32,    32,  "BGR32 (32  BGR-8-8-8-8)" },
-	{ V4L2_PIX_FMT_RGB32,    32,  "RGB32 (32  RGB-8-8-8-8)" },
-	{ V4L2_PIX_FMT_GREY,     8,  "GREY (8  Greyscale)" },
-	{ V4L2_PIX_FMT_Y10,      16,  "Y10 (10 Greyscale)" },
-	{ V4L2_PIX_FMT_Y12,      16,  "Y12 (12 Greyscale)" },
-	{ V4L2_PIX_FMT_YVU410,   -1,  "YVU410 (9  YVU 4:1:0)" },
-	{ V4L2_PIX_FMT_YVU420,   12,  "YVU420 (12  YVU 4:2:0)" },
-	{ V4L2_PIX_FMT_YUYV,     16,  "YUYV (16  YUV 4:2:2)" },
-	{ V4L2_PIX_FMT_UYVY,     16,  "UYVY (16  YUV 4:2:2)" },
-	{ V4L2_PIX_FMT_YUV422P,  16,  "YUV422P (16  YVU422 planar)" },
-	{ V4L2_PIX_FMT_YUV411P,  16,  "YUV411P (16  YVU411 planar)" },
-	{ V4L2_PIX_FMT_Y41P,     12,  "Y41P (12  YUV 4:1:1)" },
-	{ V4L2_PIX_FMT_NV12,     12,  "NV12 (12  Y/CbCr 4:2:0)" },
-	{ V4L2_PIX_FMT_NV21,     12,  "NV21 (12  Y/CrCb 4:2:0)" },
-	{ V4L2_PIX_FMT_YUV410,   -1,  "YUV410 (9  YUV 4:1:0)" },
-	{ V4L2_PIX_FMT_YUV420,   12,  "YUV420 (12  YUV 4:2:0)" },
-	{ V4L2_PIX_FMT_YYUV,     12,  "YYUV (16  YUV 4:2:2)" },
-	{ V4L2_PIX_FMT_HI240,    8,  "HI240 (8  8-bit color)" },
-//	{ V4L2_PIX_FMT_HM12,     8,  "HM12 (8  YUV 4:2:0 16x16 macroblocks)" },
-	{ V4L2_PIX_FMT_SBGGR8,   8,  "SBGGR8 (8  BGBG.. GRGR..)" },
-	{ V4L2_PIX_FMT_SGBRG8,   8,  "SGBRG8 (8  GBGB.. RGRG..)" },
-	{ V4L2_PIX_FMT_SGRBG8,   8,  "SGRBG8 (8 GRGR.. BGBG..)" },
-	{ V4L2_PIX_FMT_MJPEG,    0,  "MJPEG (Motion-JPEG)" },
-	{ V4L2_PIX_FMT_JPEG,     0,  "JPEG (JFIF JPEG)" },
-	{ V4L2_PIX_FMT_DV,       0,  "DV (1394)" },
-	{ V4L2_PIX_FMT_MPEG,     0,  "MPEG (MPEG-1/2/4)" },
-	{ V4L2_PIX_FMT_WNVA,     -1,  "WNVA (Winnov hw compress)" },
-	{ V4L2_PIX_FMT_SN9C10X,  -1,  "SN9C10X (SN9C10x compression)" },
-	{ V4L2_PIX_FMT_PWC1,     -1,  "PWC1 (pwc older webcam)" },
-	{ V4L2_PIX_FMT_PWC2,     -1,  "PWC2 (pwc newer webcam)" },
-	{ V4L2_PIX_FMT_ET61X251, -1,  "ET61X251 (ET61X251 compression)" },
-	{ V4L2_PIX_FMT_SGRBG10,  16,  "SGRBG10 (10bit raw bayer)" },
-	{ V4L2_PIX_FMT_SGRBG10DPCM8,    8, "SGRBG10DPCM8 (10bit raw bayer DPCM compressed to 8 bits)" },
-	{ V4L2_PIX_FMT_SGRBG12,  16,  "SGRBG12 (12bit raw bayer)" },
-	{ V4L2_PIX_FMT_SBGGR16,  16,  "SBGGR16 (16 BGBG.. GRGR..)" },
+	{ V4L2_PIX_FMT_RGB332,   8,  "RGB332 (8  RGB-3-3-2)", 0, 0 },
+	{ V4L2_PIX_FMT_RGB555,   16,  "RGB555 (16  RGB-5-5-5)", 0, 0 },
+	{ V4L2_PIX_FMT_RGB565,   16,  "RGB565 (16  RGB-5-6-5)", 0, 0 },
+	{ V4L2_PIX_FMT_RGB555X,  16,  "RGB555X (16  RGB-5-5-5 BE)", 0, 0 },
+	{ V4L2_PIX_FMT_RGB565X,  16,  "RGB565X (16  RGB-5-6-5 BE)", 0, 0 },
+	{ V4L2_PIX_FMT_BGR24,    24,  "BGR24 (24  BGR-8-8-8)", 0, 0 },
+	{ V4L2_PIX_FMT_RGB24,    24,  "RGB24 (24  RGB-8-8-8)", 0, 0 },
+	{ V4L2_PIX_FMT_BGR32,    32,  "BGR32 (32  BGR-8-8-8-8)", 0, 0 },
+	{ V4L2_PIX_FMT_RGB32,    32,  "RGB32 (32  RGB-8-8-8-8)", 0, 0 },
+	{ V4L2_PIX_FMT_GREY,     8,  "GREY (8  Greyscale)", 0, 0 },
+	{ V4L2_PIX_FMT_Y10,      16,  "Y10 (10 Greyscale)", 0, 0 },
+	{ V4L2_PIX_FMT_Y12,      16,  "Y12 (12 Greyscale)", 0, 0 },
+	{ V4L2_PIX_FMT_YVU410,   -1,  "YVU410 (9  YVU 4:1:0)", 0, 0 },
+	{ V4L2_PIX_FMT_YVU420,   12,  "YVU420 (12  YVU 4:2:0)", 0, 0 },
+	{ V4L2_PIX_FMT_UYVY,     16,  "UYVY (16  YUV 4:2:2)", 1, 0 },
+	{ V4L2_PIX_FMT_VYUY,     16,  "VYUY (16  YUV 4:2:2)", 1, 2 },
+	{ V4L2_PIX_FMT_YUYV,     16,  "YUYV (16  YUV 4:2:2)", 0, 1 },
+	{ V4L2_PIX_FMT_YVYU,     16,  "YVYU (16  YUV 4:2:2)", 0, 3 },
+	{ V4L2_PIX_FMT_YUV422P,  16,  "YUV422P (16  YVU422 planar)", 0, 0 },
+	{ V4L2_PIX_FMT_YUV411P,  16,  "YUV411P (16  YVU411 planar)", 0, 0 },
+	{ V4L2_PIX_FMT_Y41P,     12,  "Y41P (12  YUV 4:1:1)", 0, 0 },
+	{ V4L2_PIX_FMT_NV12,     12,  "NV12 (12  Y/CbCr 4:2:0)", 0, 0 },
+	{ V4L2_PIX_FMT_NV21,     12,  "NV21 (12  Y/CrCb 4:2:0)", 0, 0 },
+	{ V4L2_PIX_FMT_YUV410,   -1,  "YUV410 (9  YUV 4:1:0)", 0, 0 },
+	{ V4L2_PIX_FMT_YUV420,   12,  "YUV420 (12  YUV 4:2:0)", 0, 0 },
+	{ V4L2_PIX_FMT_YYUV,     12,  "YYUV (16  YUV 4:2:2)", 0, 0 },
+	{ V4L2_PIX_FMT_HI240,    8,  "HI240 (8  8-bit color)", 0, 0 },
+//	{ V4L2_PIX_FMT_HM12,     8,  "HM12 (8  YUV 4:2:0 16x16 macroblocks)", 0, 0 },
+	{ V4L2_PIX_FMT_SBGGR8,   8,  "SBGGR8 (8  BGBG.. GRGR..)", 0, 0 },
+	{ V4L2_PIX_FMT_SGBRG8,   8,  "SGBRG8 (8  GBGB.. RGRG..)", 0, 0 },
+	{ V4L2_PIX_FMT_SGRBG8,   8,  "SGRBG8 (8 GRGR.. BGBG..)", 0, 0 },
+	{ V4L2_PIX_FMT_MJPEG,    0,  "MJPEG (Motion-JPEG)", 0, 0 },
+	{ V4L2_PIX_FMT_JPEG,     0,  "JPEG (JFIF JPEG)", 0, 0 },
+	{ V4L2_PIX_FMT_DV,       0,  "DV (1394)", 0, 0 },
+	{ V4L2_PIX_FMT_MPEG,     0,  "MPEG (MPEG-1/2/4)", 0, 0 },
+	{ V4L2_PIX_FMT_WNVA,     -1,  "WNVA (Winnov hw compress)", 0, 0 },
+	{ V4L2_PIX_FMT_SN9C10X,  -1,  "SN9C10X (SN9C10x compression)", 0, 0 },
+	{ V4L2_PIX_FMT_PWC1,     -1,  "PWC1 (pwc older webcam)", 0, 0 },
+	{ V4L2_PIX_FMT_PWC2,     -1,  "PWC2 (pwc newer webcam)", 0, 0 },
+	{ V4L2_PIX_FMT_ET61X251, -1,  "ET61X251 (ET61X251 compression)", 0, 0 },
+	{ V4L2_PIX_FMT_SGRBG10,  16,  "SGRBG10 (10bit raw bayer)", 0, 0 },
+	{ V4L2_PIX_FMT_SGRBG10DPCM8,    8, "SGRBG10DPCM8 (10bit raw bayer DPCM compressed to 8 bits)", 0, 0 },
+	{ V4L2_PIX_FMT_SGRBG12,  16,  "SGRBG12 (12bit raw bayer)", 0, 0 },
+	{ V4L2_PIX_FMT_SBGGR16,  16,  "SBGGR16 (16 BGBG.. GRGR..)", 0, 0 },
 };
 
 static void *xalloc(int size)
@@ -203,8 +207,11 @@ out:	fclose(f);
 	return b;
 }
 
-static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int format, unsigned char *rgb, int rgb_stride)
+static void raw_to_rgb(const struct format_info *info,
+		       unsigned char *src, int src_size[2], unsigned char *rgb)
 {
+	unsigned int src_stride = src_size[0] * info->bpp / 8;
+	unsigned int rgb_stride = src_size[0] * 3;
 	unsigned char *src_luma, *src_chroma;
 	unsigned char *buf;
 	unsigned int pixel;
@@ -212,35 +219,40 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 	int src_x, src_y;
 	int dst_x, dst_y;
 	int color_pos = 1;
+	int y_pos;
+	int cb_pos;
+	int cr_pos;
 	int shift = 0;
 
-	switch (format) {
+	switch (info->fmt) {
+	case V4L2_PIX_FMT_VYUY:
+	case V4L2_PIX_FMT_YVYU:
 	case V4L2_PIX_FMT_UYVY:
-		color_pos = -1;
-		src++;
-		/* Continue */
 	case V4L2_PIX_FMT_YUYV:		/* Packed YUV 4:2:2 */
+		y_pos = info->y_pos;
+		cb_pos = info->cb_pos;
+		cr_pos = (info->cb_pos + 2) % 4;
+
 		for (src_y = 0, dst_y = 0; dst_y < src_size[1]; src_y++, dst_y++) {
-			cr = 0;
-
 			for (src_x = 0, dst_x = 0; dst_x < src_size[0]; ) {
-				a  = src[src_y*src_stride + src_x*2];
-				cb = src[src_y*src_stride + src_x*2 + color_pos];
+				cb = src[src_y*src_stride + src_x*4 + cb_pos];
+				cr = src[src_y*src_stride + src_x*4 + cr_pos];
+
+				a  = src[src_y*src_stride + src_x*4 + y_pos];
 				yuv_to_rgb(a,cb,cr, &r, &g, &b);
 				rgb[dst_y*rgb_stride+3*dst_x+0] = swaprb ? b : r;
 				rgb[dst_y*rgb_stride+3*dst_x+1] = g;
 				rgb[dst_y*rgb_stride+3*dst_x+2] = swaprb ? r : b;
-				src_x++;
 				dst_x++;
 
-				a  = src[src_y*src_stride + src_x*2];
-				cr = src[src_y*src_stride + src_x*2 + color_pos];
+				a  = src[src_y*src_stride + src_x*4 + y_pos + 2];
 				yuv_to_rgb(a,cb,cr, &r, &g, &b);
 				rgb[dst_y*rgb_stride+3*dst_x+0] = swaprb ? b : r;
 				rgb[dst_y*rgb_stride+3*dst_x+1] = g;
 				rgb[dst_y*rgb_stride+3*dst_x+2] = swaprb ? r : b;
-				src_x++;
 				dst_x++;
+
+				src_x++;
 			}
 		}
 		break;
@@ -558,7 +570,7 @@ int main(int argc, char *argv[])
 		info->bpp, info->name);
 	dst = xalloc(size[0]*size[1]*3);
 	do {
-		raw_to_rgb(src, size[0]*info->bpp/8, size, format, dst, size[0]*3);
+		raw_to_rgb(info, src, size, dst);
 		sprintf(multi_file_out, "%s-%03i.pnm", file_out, n);
 		printf("Writing to file `%s'...\n", multiple ? multi_file_out : file_out);
 		f = fopen(multiple ? multi_file_out : file_out, "wb");
