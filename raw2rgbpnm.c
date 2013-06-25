@@ -47,7 +47,6 @@
 
 char *progname = "yuv_to_rgbpnm";
 
-static const int downscaling = 1;
 static int swaprb = 0;
 static int highbits = 0;			/* Bayer RAW10 formats use high bits for data */
 static int brightness = 256;			/* 24.8 fixed point */
@@ -216,14 +215,9 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 	unsigned char *buf;
 	int r, g, b, a, cr, cb;
 	int src_x, src_y;
-	int src_step;
 	int dst_x, dst_y;
-	int dst_step;
 	int color_pos = 1;
 	int shift = 0;
-
-	src_step = 1;
-	dst_step = downscaling;
 
 	switch (format) {
 	default:
@@ -232,8 +226,8 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 		color_pos = -1;
 		src++;
 		/* Continue */
-	case V4L2_PIX_FMT_YUYV:		/* Packed YUV 4:2:2; FIXME: downscale should be odd, otherwise cr is wrong */
-		for (src_y = 0, dst_y = 0; dst_y < src_size[1]; src_y += src_step, dst_y += dst_step) {
+	case V4L2_PIX_FMT_YUYV:		/* Packed YUV 4:2:2 */
+		for (src_y = 0, dst_y = 0; dst_y < src_size[1]; src_y++, dst_y++) {
 			cr = 0;
 
 			for (src_x = 0, dst_x = 0; dst_x < src_size[0]; ) {
@@ -243,8 +237,8 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 				rgb[dst_y*rgb_stride+3*dst_x+0] = swaprb ? b : r;
 				rgb[dst_y*rgb_stride+3*dst_x+1] = g;
 				rgb[dst_y*rgb_stride+3*dst_x+2] = swaprb ? r : b;
-				src_x += src_step;
-				dst_x += dst_step;
+				src_x++;
+				dst_x++;
 
 				a  = src[src_y*src_stride + src_x*2];
 				cr = src[src_y*src_stride + src_x*2 + color_pos];
@@ -252,8 +246,8 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 				rgb[dst_y*rgb_stride+3*dst_x+0] = swaprb ? b : r;
 				rgb[dst_y*rgb_stride+3*dst_x+1] = g;
 				rgb[dst_y*rgb_stride+3*dst_x+2] = swaprb ? r : b;
-				src_x += src_step;
-				dst_x += dst_step;
+				src_x++;
+				dst_x++;
 			}
 		}
 		break;
@@ -265,7 +259,7 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 		src_chroma = &src[src_size[0] * src_size[1]];
 		src_stride = src_stride * 8 / 12;
 
-		for (src_y = 0, dst_y = 0; dst_y < src_size[1]; src_y += src_step, dst_y += dst_step) {
+		for (src_y = 0, dst_y = 0; dst_y < src_size[1]; src_y++, dst_y++) {
 			cr = 0;
 
 			for (dst_x = 0, src_x = 0; dst_x < src_size[0]; ) {
@@ -275,8 +269,8 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 				rgb[src_y*rgb_stride+3*src_x+0] = swaprb ? b : r;
 				rgb[src_y*rgb_stride+3*src_x+1] = g;
 				rgb[src_y*rgb_stride+3*src_x+2] = swaprb ? r : b;
-				src_x += src_step;
-				dst_x += dst_step;
+				src_x++;
+				dst_x++;
 
 				a  = src_luma[dst_y*src_stride + dst_x];
 				cr = src_chroma[(dst_y/2)*src_stride + dst_x + color_pos - 1];
@@ -284,8 +278,8 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 				rgb[src_y*rgb_stride+3*src_x+0] = swaprb ? b : r;
 				rgb[src_y*rgb_stride+3*src_x+1] = g;
 				rgb[src_y*rgb_stride+3*src_x+2] = swaprb ? r : b;
-				src_x += src_step;
-				dst_x += dst_step;
+				src_x++;
+				dst_x++;
 			}
 		}
 		break;
@@ -294,28 +288,28 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 		shift += 2;
 	case V4L2_PIX_FMT_Y10:
 		shift += 2;
-		for (src_y = 0, dst_y = 0; dst_y < src_size[1]; src_y += src_step, dst_y += dst_step) {
+		for (src_y = 0, dst_y = 0; dst_y < src_size[1]; src_y++, dst_y++) {
 			for (src_x = 0, dst_x = 0; dst_x < src_size[0]; ) {
 				a = (src[src_y*src_stride + src_x*2+0] |
 				     (src[src_y*src_stride + src_x*2+1] << 8)) >> shift;
 				rgb[dst_y*rgb_stride+3*dst_x+0] = a;
 				rgb[dst_y*rgb_stride+3*dst_x+1] = a;
 				rgb[dst_y*rgb_stride+3*dst_x+2] = a;
-				src_x += src_step;
-				dst_x += dst_step;
+				src_x++;
+				dst_x++;
 			}
 		}
 		break;
 
 	case V4L2_PIX_FMT_GREY:
-		for (src_y = 0, dst_y = 0; dst_y < src_size[1]; src_y += src_step, dst_y += dst_step) {
+		for (src_y = 0, dst_y = 0; dst_y < src_size[1]; src_y++, dst_y++) {
 			for (src_x = 0, dst_x = 0; dst_x < src_size[0]; ) {
 				a = src[src_y*src_stride + src_x];
 				rgb[dst_y*rgb_stride+3*dst_x+0] = a;
 				rgb[dst_y*rgb_stride+3*dst_x+1] = a;
 				rgb[dst_y*rgb_stride+3*dst_x+2] = a;
-				src_x += src_step;
-				dst_x += dst_step;
+				src_x++;
+				dst_x++;
 			}
 		}
 		break;
@@ -379,7 +373,7 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 		swaprb = !swaprb;
 		/* Fallthrough */
 	case V4L2_PIX_FMT_RGB24:
-		for (src_y = 0, dst_y = 0; dst_y < src_size[1]; src_y += src_step, dst_y += dst_step) {
+		for (src_y = 0, dst_y = 0; dst_y < src_size[1]; src_y++, dst_y++) {
 			cr = 0;
 			for (src_x = 0, dst_x = 0; dst_x < src_size[0]; ) {
 				r = src[dst_y*src_stride + dst_x*3 + 0];
@@ -388,8 +382,8 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 				rgb[src_y*rgb_stride+3*src_x+0] = swaprb ? b : r;
 				rgb[src_y*rgb_stride+3*src_x+1] = g;
 				rgb[src_y*rgb_stride+3*src_x+2] = swaprb ? r : b;
-				src_x += src_step;
-				dst_x += dst_step;
+				src_x++;
+				dst_x++;
 			}
 		}
 		break;
@@ -397,7 +391,7 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 		swaprb = !swaprb;
 		/* Fallthrough */
 	case V4L2_PIX_FMT_RGB32:
-		for (src_y = 0, dst_y = 0; dst_y < src_size[1]; src_y += src_step, dst_y += dst_step) {
+		for (src_y = 0, dst_y = 0; dst_y < src_size[1]; src_y++, dst_y++) {
 			cr = 0;
 			for (src_x = 0, dst_x = 0; dst_x < src_size[0]; ) {
 				r = src[dst_y*src_stride + dst_x*4 + 0];
@@ -406,8 +400,8 @@ static void raw_to_rgb(unsigned char *src, int src_stride, int src_size[2], int 
 				rgb[src_y*rgb_stride+3*src_x+0] = swaprb ? b : r;
 				rgb[src_y*rgb_stride+3*src_x+1] = g;
 				rgb[src_y*rgb_stride+3*src_x+2] = swaprb ? r : b;
-				src_x += src_step;
-				dst_x += dst_step;
+				src_x++;
+				dst_x++;
 			}
 		}
 		break;
