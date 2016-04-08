@@ -81,6 +81,8 @@ static const struct format_info {
 	{ V4L2_PIX_FMT_Y41P,     12,  "Y41P (12  YUV 4:1:1)", 0, 0 },
 	{ V4L2_PIX_FMT_NV12,     12,  "NV12 (12  Y/CbCr 4:2:0)", 0, 0 },
 	{ V4L2_PIX_FMT_NV21,     12,  "NV21 (12  Y/CrCb 4:2:0)", 0, 0 },
+	{ V4L2_PIX_FMT_NV16,     16,  "NV16 (16  Y/CbCr 4:2:2)", 0, 0 },
+	{ V4L2_PIX_FMT_NV61,     16,  "NV61 (16  Y/CrCb 4:2:2)", 0, 1 },
 	{ V4L2_PIX_FMT_YUV410,   -1,  "YUV410 (9  YUV 4:1:0)", 0, 0 },
 	{ V4L2_PIX_FMT_YUV420,   12,  "YUV420 (12  YUV 4:2:0)", 0, 0 },
 	{ V4L2_PIX_FMT_YYUV,     12,  "YYUV (16  YUV 4:2:2)", 0, 0 },
@@ -279,6 +281,39 @@ static void raw_to_rgb(const struct format_info *info,
 
 				a  = src_luma[dst_y*src_stride + dst_x];
 				cr = src_chroma[(dst_y/2)*src_stride + dst_x + color_pos - 1];
+				yuv_to_rgb(a,cb,cr, &r, &g, &b);
+				rgb[src_y*rgb_stride+3*src_x+0] = swaprb ? b : r;
+				rgb[src_y*rgb_stride+3*src_x+1] = g;
+				rgb[src_y*rgb_stride+3*src_x+2] = swaprb ? r : b;
+				src_x++;
+				dst_x++;
+			}
+		}
+		break;
+
+	case V4L2_PIX_FMT_NV16:
+	case V4L2_PIX_FMT_NV61:
+		src_luma = src;
+		src_chroma = &src[src_size[0] * src_size[1]];
+		src_stride = src_stride * 8 / 16;
+
+		cb_pos = info->cb_pos;
+		cr_pos = 1 - info->cb_pos;
+
+		for (src_y = 0, dst_y = 0; dst_y < src_size[1]; src_y++, dst_y++) {
+			for (dst_x = 0, src_x = 0; dst_x < src_size[0]; ) {
+				cb = src_chroma[dst_y*src_stride + dst_x + cb_pos];
+				cr = src_chroma[dst_y*src_stride + dst_x + cr_pos];
+
+				a  = src_luma[dst_y*src_stride + dst_x];
+				yuv_to_rgb(a,cb,cr, &r, &g, &b);
+				rgb[src_y*rgb_stride+3*src_x+0] = swaprb ? b : r;
+				rgb[src_y*rgb_stride+3*src_x+1] = g;
+				rgb[src_y*rgb_stride+3*src_x+2] = swaprb ? r : b;
+				src_x++;
+				dst_x++;
+
+				a  = src_luma[dst_y*src_stride + dst_x];
 				yuv_to_rgb(a,cb,cr, &r, &g, &b);
 				rgb[src_y*rgb_stride+3*src_x+0] = swaprb ? b : r;
 				rgb[src_y*rgb_stride+3*src_x+1] = g;
