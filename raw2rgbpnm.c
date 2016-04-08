@@ -432,6 +432,21 @@ static void raw_to_rgb(const struct format_info *info,
 		}
 		free(buf);
 		break;
+	case V4L2_PIX_FMT_RGB332:
+		for (src_y = 0, dst_y = 0; dst_y < src_size[1]; src_y++, dst_y++) {
+			for (src_x = 0, dst_x = 0; dst_x < src_size[0]; ) {
+				pixel = src[dst_y*src_stride + dst_x];
+				r = (pixel << 0) & 0xe0;
+				g = (pixel << 3) & 0xe0;
+				b = (pixel << 6) & 0xc0;
+				rgb[src_y*rgb_stride+3*src_x+0] = swaprb ? b : r;
+				rgb[src_y*rgb_stride+3*src_x+1] = g;
+				rgb[src_y*rgb_stride+3*src_x+2] = swaprb ? r : b;
+				src_x++;
+				dst_x++;
+			}
+		}
+		break;
 	case V4L2_PIX_FMT_RGB555:
 		for (src_y = 0, dst_y = 0; dst_y < src_size[1]; src_y++, dst_y++) {
 			for (src_x = 0, dst_x = 0; dst_x < src_size[0]; ) {
