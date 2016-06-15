@@ -70,21 +70,24 @@ static const struct format_info {
 	{ V4L2_PIX_FMT_GREY,     8,  "GREY (8  Greyscale)", 0, 0 },
 	{ V4L2_PIX_FMT_Y10,      16,  "Y10 (10 Greyscale)", 0, 0 },
 	{ V4L2_PIX_FMT_Y12,      16,  "Y12 (12 Greyscale)", 0, 0 },
-	{ V4L2_PIX_FMT_YVU410,   -1,  "YVU410 (9  YVU 4:1:0)", 0, 0 },
-	{ V4L2_PIX_FMT_YVU420,   12,  "YVU420 (12  YVU 4:2:0)", 0, 0 },
 	{ V4L2_PIX_FMT_UYVY,     16,  "UYVY (16  YUV 4:2:2)", 1, 0 },
 	{ V4L2_PIX_FMT_VYUY,     16,  "VYUY (16  YUV 4:2:2)", 1, 2 },
 	{ V4L2_PIX_FMT_YUYV,     16,  "YUYV (16  YUV 4:2:2)", 0, 1 },
 	{ V4L2_PIX_FMT_YVYU,     16,  "YVYU (16  YUV 4:2:2)", 0, 3 },
-	{ V4L2_PIX_FMT_YUV422P,  16,  "YUV422P (16  YVU422 planar)", 0, 0 },
-	{ V4L2_PIX_FMT_YUV411P,  16,  "YUV411P (16  YVU411 planar)", 0, 0 },
+	{ V4L2_PIX_FMT_YUV410,   -1,  "YUV410P (9  YUV 4:1:0 planar)", 0, 0 },
+	{ V4L2_PIX_FMT_YVU410,   -1,  "YVU410P (9  YVU 4:1:0 planar)", 0, 1 },
+	{ V4L2_PIX_FMT_YUV411P,  12,  "YUV411P (12  YUV 4:1:1 planar)", 0, 0 },
+	{ V4L2_PIX_FMT_YUV420,   12,  "YUV420P (12  YUV 4:2:0 planar)", 0, 0 },
+	{ V4L2_PIX_FMT_YVU420,   12,  "YVU420P (12  YVU 4:2:2 planar)", 0, 1 },
+	{ V4L2_PIX_FMT_YUV422P,  16,  "YUV422P (16  YUV 4:2:2 planar)", 0, 0 },
+	{ V4L2_PIX_FMT_YVU422M,  16,  "YVU422P (16  YVU 4:2:2 planar)", 0, 0 },
+	{ V4L2_PIX_FMT_YUV444M,  24,  "YUV444P (24  YUV 4:4:4 planar)", 0, 0 },
+	{ V4L2_PIX_FMT_YVU444M,  24,  "YUV444P (24  YVU 4:4:4 planar)", 0, 0 },
 	{ V4L2_PIX_FMT_Y41P,     12,  "Y41P (12  YUV 4:1:1)", 0, 0 },
 	{ V4L2_PIX_FMT_NV12,     12,  "NV12 (12  Y/CbCr 4:2:0)", 0, 0 },
 	{ V4L2_PIX_FMT_NV21,     12,  "NV21 (12  Y/CrCb 4:2:0)", 0, 0 },
 	{ V4L2_PIX_FMT_NV16,     16,  "NV16 (16  Y/CbCr 4:2:2)", 0, 0 },
 	{ V4L2_PIX_FMT_NV61,     16,  "NV61 (16  Y/CrCb 4:2:2)", 0, 1 },
-	{ V4L2_PIX_FMT_YUV410,   -1,  "YUV410 (9  YUV 4:1:0)", 0, 0 },
-	{ V4L2_PIX_FMT_YUV420,   12,  "YUV420 (12  YUV 4:2:0)", 0, 0 },
 	{ V4L2_PIX_FMT_YYUV,     12,  "YYUV (16  YUV 4:2:2)", 0, 0 },
 	{ V4L2_PIX_FMT_HI240,    8,  "HI240 (8  8-bit color)", 0, 0 },
 //	{ V4L2_PIX_FMT_HM12,     8,  "HM12 (8  YUV 4:2:0 16x16 macroblocks)", 0, 0 },
@@ -325,7 +328,7 @@ static void raw_to_rgb(const struct format_info *info,
 		}
 		break;
 
-	case V4L2_PIX_FMT_YUV420:
+	case V4L2_PIX_FMT_YUV411P:
 		src_luma = src;
 		src_cb = &src[src_size[0] * src_size[1]];
 		src_cr = &src[src_size[0] * src_size[1] / 4 * 5];
@@ -334,8 +337,92 @@ static void raw_to_rgb(const struct format_info *info,
 		for (src_y = 0, dst_y = 0; dst_y < src_size[1]; src_y++, dst_y++) {
 			for (dst_x = 0, src_x = 0; dst_x < src_size[0]; ) {
 				a  = src_luma[dst_y*src_stride + dst_x];
+				cb = src_cb[dst_y*src_stride/4 + dst_x/4];
+				cr = src_cr[dst_y*src_stride/4 + dst_x/4];
+
+				yuv_to_rgb(a,cb,cr, &r, &g, &b);
+				rgb[src_y*rgb_stride+3*src_x+0] = swaprb ? b : r;
+				rgb[src_y*rgb_stride+3*src_x+1] = g;
+				rgb[src_y*rgb_stride+3*src_x+2] = swaprb ? r : b;
+				src_x++;
+				dst_x++;
+			}
+		}
+		break;
+
+	case V4L2_PIX_FMT_YUV420:
+	case V4L2_PIX_FMT_YVU420:
+		src_luma = src;
+		if (info->cb_pos == 0) {
+			src_cb = &src[src_size[0] * src_size[1]];
+			src_cr = &src[src_size[0] * src_size[1] / 4 * 5];
+		} else {
+			src_cr = &src[src_size[0] * src_size[1]];
+			src_cb = &src[src_size[0] * src_size[1] / 4 * 5];
+		}
+		src_stride = src_stride * 8 / 12;
+
+		for (src_y = 0, dst_y = 0; dst_y < src_size[1]; src_y++, dst_y++) {
+			for (dst_x = 0, src_x = 0; dst_x < src_size[0]; ) {
+				a  = src_luma[dst_y*src_stride + dst_x];
 				cb = src_cb[(dst_y/2)*src_stride/2 + dst_x/2];
 				cr = src_cr[(dst_y/2)*src_stride/2 + dst_x/2];
+
+				yuv_to_rgb(a,cb,cr, &r, &g, &b);
+				rgb[src_y*rgb_stride+3*src_x+0] = swaprb ? b : r;
+				rgb[src_y*rgb_stride+3*src_x+1] = g;
+				rgb[src_y*rgb_stride+3*src_x+2] = swaprb ? r : b;
+				src_x++;
+				dst_x++;
+			}
+		}
+		break;
+
+	case V4L2_PIX_FMT_YUV422P:
+	case V4L2_PIX_FMT_YVU422M:
+		src_luma = src;
+		if (info->cb_pos == 0) {
+			src_cb = &src[src_size[0] * src_size[1]];
+			src_cr = &src[src_size[0] * src_size[1] / 2 * 3];
+		} else {
+			src_cr = &src[src_size[0] * src_size[1]];
+			src_cb = &src[src_size[0] * src_size[1] / 2 * 3];
+		}
+		src_stride = src_stride * 8 / 16;
+
+		for (src_y = 0, dst_y = 0; dst_y < src_size[1]; src_y++, dst_y++) {
+			for (dst_x = 0, src_x = 0; dst_x < src_size[0]; ) {
+				a  = src_luma[dst_y*src_stride + dst_x];
+				cb = src_cb[dst_y*src_stride/2 + dst_x/2];
+				cr = src_cr[dst_y*src_stride/2 + dst_x/2];
+
+				yuv_to_rgb(a,cb,cr, &r, &g, &b);
+				rgb[src_y*rgb_stride+3*src_x+0] = swaprb ? b : r;
+				rgb[src_y*rgb_stride+3*src_x+1] = g;
+				rgb[src_y*rgb_stride+3*src_x+2] = swaprb ? r : b;
+				src_x++;
+				dst_x++;
+			}
+		}
+		break;
+
+	case V4L2_PIX_FMT_YUV444M:
+	case V4L2_PIX_FMT_YVU444M:
+		src_luma = src;
+		if (info->cb_pos == 0) {
+			src_cb = &src[src_size[0] * src_size[1]];
+			src_cr = &src[src_size[0] * src_size[1] * 2];
+		} else {
+			src_cr = &src[src_size[0] * src_size[1]];
+			src_cb = &src[src_size[0] * src_size[1] * 2];
+		}
+		src_stride = src_stride * 8 / 24;
+
+		for (src_y = 0, dst_y = 0; dst_y < src_size[1]; src_y++, dst_y++) {
+			for (dst_x = 0, src_x = 0; dst_x < src_size[0]; ) {
+				a  = src_luma[dst_y*src_stride + dst_x];
+				cb = src_cb[dst_y*src_stride + dst_x];
+				cr = src_cr[dst_y*src_stride + dst_x];
 
 				yuv_to_rgb(a,cb,cr, &r, &g, &b);
 				rgb[src_y*rgb_stride+3*src_x+0] = swaprb ? b : r;
