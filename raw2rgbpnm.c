@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2008--2011 Nokia Corporation
  *
- * Contact: Sakari Ailus <sakari.ailus@maxwell.research.nokia.com>
+ * Contact: Sakari Ailus <sakari.ailus@iki.fi>
  *
  * Author:
  *	Tuukka Toivonen <tuukkat76@gmail.com>
