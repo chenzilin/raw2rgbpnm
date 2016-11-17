@@ -82,7 +82,7 @@ static const struct format_info {
 	{ V4L2_PIX_FMT_YUV422P,  16,  "YUV422P (16  YUV 4:2:2 planar)", 0, 0 },
 	{ V4L2_PIX_FMT_YVU422M,  16,  "YVU422P (16  YVU 4:2:2 planar)", 0, 0 },
 	{ V4L2_PIX_FMT_YUV444M,  24,  "YUV444P (24  YUV 4:4:4 planar)", 0, 0 },
-	{ V4L2_PIX_FMT_YVU444M,  24,  "YUV444P (24  YVU 4:4:4 planar)", 0, 0 },
+	{ V4L2_PIX_FMT_YVU444M,  24,  "YVU444P (24  YVU 4:4:4 planar)", 0, 0 },
 	{ V4L2_PIX_FMT_Y41P,     12,  "Y41P (12  YUV 4:1:1)", 0, 0 },
 	{ V4L2_PIX_FMT_NV12,     12,  "NV12 (12  Y/CbCr 4:2:0)", 0, 0 },
 	{ V4L2_PIX_FMT_NV21,     12,  "NV21 (12  Y/CrCb 4:2:0)", 0, 0 },
